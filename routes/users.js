@@ -10,12 +10,13 @@ const db = require('../db/db');
 
 usersRouter.param('id', (req, res, next, id) => {
   try {
-    const userId = parseInt(id); 
-    if (Number.isNaN(userId) || userId < 0 || !Number.isInteger(userId)) {    
-      next(Error('Invalid parameter'));      
+    const userId = parseInt(id);    
+    if (Number.isNaN(userId) || userId < 1 || !Number.isInteger(userId)) {               
+      next(res.status(404).json('Invalid parameter'));
+    } else {      
+      req.userId = userId;
+      next();
     }
-    req.userId = userId;
-    next();
   } catch (err) {
     next(err);
   }

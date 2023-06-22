@@ -7,7 +7,6 @@ const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const bcrypt = require('bcrypt');
 
-
 require("dotenv").config();
 const port = process.env.PORT;
 
@@ -94,4 +93,6 @@ app.use('/auth', authRouter);
 
 app.listen(port, () => {
   console.log(`App listening on port ${port}`)
-})
+});
+
+module.exports = app;
