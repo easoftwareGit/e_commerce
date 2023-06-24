@@ -1,6 +1,5 @@
 const db = require('../db/db');
 const bcrypt = require('bcrypt');
-require("dotenv").config();
 
 // from https://stackoverflow.com/questions/46155/how-can-i-validate-an-email-address-in-javascript
 function validEmail(email) {

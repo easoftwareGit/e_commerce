@@ -82,12 +82,20 @@ usersRouter.post('/', async (req, res) => {
   try {
     const results = await db.query(sqlCommand, rowValues);
     if (db.validResultsAtLeast1Row(results)) {
-      res.status(200).json(results.rows[0]);      
+      // console.log(`new user ${results.rows[0].email} posted with id ${results.rows[0].id}`);
+      res.status(201).json(results.rows[0]);      
     } else {
       res.status(404).json('User not added');
     }    
   } catch (err) {
-    throw Error(err);
+    // console.log(`err code = ${err.code}`);
+    if (err.code === '23505') {
+      res.status(404).json('email already used');
+    } else if (err.code === '23502') {
+      res.status(404).json('required value missing');
+    } else {
+      throw Error(err);
+    }    
   }
 });
 

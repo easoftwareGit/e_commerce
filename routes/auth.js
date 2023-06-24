@@ -1,6 +1,5 @@
 const express = require('express');
 const authRouter = express.Router();
-const bcrypt = require('bcrypt');
 const passport = require("passport");
 const userQuery = require('../db/userQueries');
 
