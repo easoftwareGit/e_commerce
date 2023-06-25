@@ -1,10 +1,14 @@
 -- CREATE DATABASE _____
 
-CREATE TABLE users (
-  id integer PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  name VARCHAR(30),
-  email VARCHAR(30)
+CREATE TABLE IF NOT EXISTS "users" (
+	"id" integer PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+	"email" varchar NOT NULL UNIQUE,
+	"password_hash" TEXT NOT NULL,
+	"first_name" varchar NOT NULL,
+	"last_name" varchar NOT NULL,
+	"phone" varchar NOT NULL
 );
+CREATE UNIQUE INDEX IF NOT EXISTS users_email_idx ON users (email);
 
 CREATE ROLE testname WITH LOGIN PASSWORD 'testpassword';
 -- CREATE ROLE ____ WITH LOGIN PASSWORD '______';
@@ -32,22 +36,14 @@ SELECT grantee, table_schema, table_name, privilege_type
 FROM information_schema.table_privileges
 WHERE grantee = 'testname';
 
--- CREATE TABLE IF NOT EXISTS "users" (
--- 	"id" integer PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
--- 	"email" varchar NOT NULL UNIQUE,
--- 	"password_hash" TEXT NOT NULL,
--- 	"first_name" varchar NOT NULL,
--- 	"last_name" varchar NOT NULL,
--- 	"phone" varchar NOT NULL
--- );
-
--- CREATE TABLE IF NOT EXISTS "products" (
--- 	"id" integer PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
--- 	"name" varchar NOT NULL UNIQUE,
--- 	"model_number" varchar NOT NULL UNIQUE,
--- 	"description" varchar NOT NULL,
--- 	"price" DECIMAL NOT NULL	
--- );
+CREATE TABLE IF NOT EXISTS "products" (
+	"id" integer PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+	"name" varchar NOT NULL UNIQUE,
+	"model_number" varchar NOT NULL UNIQUE,
+	"description" varchar NOT NULL,
+	"price" DECIMAL NOT NULL	
+);
+CREATE UNIQUE INDEX IF NOT EXISTS products_name_idx ON products (name);
 
 -- CREATE TABLE IF NOT EXISTS "orders" (
 -- 	"id" integer PRIMARY KEY GENERATED ALWAYS AS IDENTITY,

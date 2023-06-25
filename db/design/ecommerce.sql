@@ -20,8 +20,10 @@ CREATE TABLE IF NOT EXISTS "products" (
 	"description" varchar NOT NULL,
 	"price" DECIMAL NOT NULL	
 );
+CREATE UNIQUE INDEX IF NOT EXISTS products_name_idx ON products (name);
+CREATE UNIQUE INDEX IF NOT EXISTS products_model_number_idx ON products (model_number);
 
--- confirm table and index were created
+-- confirm table and indexes were created
 SELECT *
 FROM pg_indexes
 WHERE tablename = 'products';

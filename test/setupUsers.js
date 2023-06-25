@@ -41,7 +41,7 @@ const users = [
   }    
 ];
 
-const usersCount = users.length;
+const userCount = users.length;
 
 async function createUserEmailIndex() {
   const sqlCreateIndex = `CREATE UNIQUE INDEX IF NOT EXISTS ${user_email_index_name} ON ${tableName} (email);`;
@@ -113,7 +113,7 @@ async function insertAllUsers() {
 module.exports = {
   tableName,
   user_email_index_name,  
-  usersCount,
+  userCount,
   createUserEmailIndex, 
   createUsersTable,   
   insertAllUsers
