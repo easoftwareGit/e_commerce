@@ -57,9 +57,9 @@ describe('/user routes', function() {
       return request(app)
         .get('/users')
         .expect(200)
-        .then((responce) => {          
-          expect(responce.body.length).to.be.equal(userCount);
-          responce.body.forEach((user) => {
+        .then((response) => {          
+          expect(response.body.length).to.be.equal(userCount);
+          response.body.forEach((user) => {
             expect(user).to.have.ownProperty('id');
             expect(user).to.have.ownProperty('password_hash');
             expect(user).to.have.ownProperty('first_name');
@@ -77,8 +77,8 @@ describe('/user routes', function() {
       return request(app)
         .get(`/users/${getUserId}`)
         .expect(200)
-        .then((responce) => {
-          const user = responce.body;
+        .then((response) => {
+          const user = response.body;
           expect(user).to.be.an.instanceOf(Object);
           expect(user).to.not.be.an.instanceOf(Array);
         });
@@ -88,8 +88,8 @@ describe('/user routes', function() {
       return request(app)
         .get(`/users/${getUserId}`)
         .expect(200)
-        .then((responce) => {
-          const user = responce.body;
+        .then((response) => {
+          const user = response.body;
           expect(user).to.have.ownProperty('id');
           expect(user).to.have.ownProperty('password_hash');
           expect(user).to.have.ownProperty('first_name');
@@ -102,8 +102,8 @@ describe('/user routes', function() {
       return request(app)
       .get(`/users/${getUserId}`)
       .expect(200)
-      .then((responce) => {
-        const user = responce.body;
+      .then((response) => {
+        const user = response.body;
         expect(user.id).to.be.an.equal(getUserId);
       });
     });
@@ -143,8 +143,8 @@ describe('/user routes', function() {
         
         return await request(app)
           .get(`/users/${putUserId}`)
-          .then((responce) => {          
-            initialUser = responce.body;
+          .then((response) => {          
+            initialUser = response.body;
           })
           .then(async () => {          
             updatedUser = Object.assign({}, initialUser, {first_name: 'Bill'});
@@ -206,14 +206,14 @@ describe('/user routes', function() {
         .post('/users')
         .send(newUser)
         .expect(201)
-        .then((responce) => {
-          const postedUser = responce.body;
+        .then((response) => {
+          const postedUser = response.body;
           assert.equal(postedUser.email, newUser.email);
           assert.equal(postedUser.password_hash, newUser.password_hash);
           assert.equal(postedUser.first_name, newUser.first_name);
           assert.equal(postedUser.last_name, newUser.last_name);
           assert.equal(postedUser.phone, newUser.phone);
-        })
+        });
     });
 
     it('did NOT post user with a duplicate email', async function() {
@@ -276,7 +276,7 @@ describe('/user routes', function() {
 
   });
 
-  describe('DELETE /user', function() {
+  describe('DELETE /user/:id', function() {
     const delUserId = 2;
 
     describe('Valid /users/:id', function() {
@@ -285,8 +285,8 @@ describe('/user routes', function() {
         return request(app)
           .delete(`/users/${delUserId}`)
           .expect(200)
-          .then((responce) => {
-            const userId = parseInt(responce.text);
+          .then((response) => {
+            const userId = parseInt(response.text);
             expect(userId).to.equal(delUserId);
           })
       });      
@@ -306,6 +306,106 @@ describe('/user routes', function() {
           .expect(404);
       });
     });
+  });
+
+});
+
+describe('/auth routes', function() {
+
+  // use password property, not password_hash property
+  const newUser = {        
+    "email": "greg@email.com",
+    "password": "ABC123",
+    "first_name": "Greg",
+    "last_name": "Blue",
+    "phone": "800 555-0000"
+  };
+  const duplicateUser = {        
+    "email": "fred@email.com",
+    "password": "123456",
+    "first_name": "Fred",
+    "last_name": "Green",
+    "phone": "800 555-4321"
+  };
+  const logInUser = {        
+    "email": newUser.email,
+    "password": newUser.password
+  };
+  const invalidUser = {
+    "email": 'invalid@gmail.com',
+    "password": newUser.password
+  }    
+
+  after('remove newly registered user', function() {
+    const sqlCommand = `DELETE FROM users WHERE id = ${newUser.id}`;
+    const results = db.query(sqlCommand);
+    console.log(`DELETEd user ${results.text}`);
+  });
+
+  describe('register valid new user', function() {
+
+    before('remove registed user that might be left over from failed tests', async function() {
+      const sqlCommand = `DELETE FROM users WHERE email = '${newUser.email}'`;
+      await db.query(sqlCommand);
+    });
+
+    it('registers a new user with valid data', async function() {
+      return await request(app)
+        .post('/auth/register')
+        .send(newUser)
+        .expect(200)
+        .then((response) => {
+          const regUser = response.body;
+          // do not check password_hash
+          assert.equal(regUser.email, newUser.email);          
+          assert.equal(regUser.first_name, newUser.first_name);
+          assert.equal(regUser.last_name, newUser.last_name);
+          assert.equal(regUser.phone, newUser.phone);
+          // save new user id for other test
+          newUser.id = regUser.id;
+        });
+    });
+  });
+
+  describe('register invalid new user', function() {
+
+    it('do NOT register user with duplicate email', async function() {
+      return await request(app)
+        .post('/auth/register')
+        .send(duplicateUser)
+        .expect(409);
+    });  
+  });
+
+  describe('login a user', function() {
+
+    it('log in user with matching email and password', async function() {
+      return await request(app)
+        .post('/auth/login')
+        .send(logInUser)
+        .expect(200)
+        .then((response) => {
+          const logInId = response.body;
+          assert.equal(logInId, newUser.id);
+        });
+    });
+
+    it('cannot login with email not in database', async function() {
+      return await request(app)
+        .post('/auth/login')
+        .send(invalidUser)
+        .expect({});
+    });
+    
+    it('cannot login with invalid password', async function() {
+      invalidUser.email = newUser.email;
+      invalidUser.password = 'INVALID';
+      return await request(app)
+        .post('/auth/login')
+        .send(invalidUser)
+        .expect({});
+    });
+
   });
 
 });
