@@ -82,8 +82,10 @@ passport.use(
 // routes
 const usersRouter = require('./routes/users');
 const authRouter = require('./routes/auth');
+const productsRouter = require('./routes/products');
 app.use('/users', usersRouter);
 app.use('/auth', authRouter);
+app.use('/products', productsRouter);
 
 // usersRouter.stack.forEach(function(r){
 //   if (r.route && r.route.path) {

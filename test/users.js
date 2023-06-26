@@ -98,11 +98,11 @@ function testUsers(app) {
   
       it('returned user has the correct id', function() {
         return request(app)
-        .get(`/users/${getUserId}`)
-        .expect(200)
-        .then((response) => {
-          const user = response.body;
-          expect(user.id).to.be.an.equal(getUserId);
+          .get(`/users/${getUserId}`)
+          .expect(200)
+          .then((response) => {
+            const user = response.body;
+            expect(user.id).to.be.an.equal(getUserId);
         });
       });
   
