@@ -6,45 +6,46 @@ const dbTools = require('../db/dbTools');
 const { assert } = require('chai');
 
 const setupProducts = require('./setupProducts');
+const { response } = require('express');
 const productCount = setupProducts.productCount;
 
 function testProducts(app) {
 
   describe('/products routes', function() {
 
-    // describe('setup products table', function() {
+    describe('setup products table', function() {
 
-    //   const productsTableName = setupProducts.tableName;
+      const productsTableName = setupProducts.tableName;
 
-    //   it("DROP products", async function() {
-    //     await dbTools.dropTable(productsTableName);
-    //     const doesExist = await dbTools.tableExists(productsTableName);      
-    //     expect(doesExist).to.be.false;
-    //   });
+      it("DROP products", async function() {
+        await dbTools.dropTable(productsTableName);
+        const doesExist = await dbTools.tableExists(productsTableName);      
+        expect(doesExist).to.be.false;
+      });
 
-    //   it('CREATE products', async function() {
-    //     await setupProducts.createProductsTable();
-    //     const doesExist = await dbTools.tableExists(productsTableName);      
-    //     expect(doesExist).to.be.true;
-    //   });
+      it('CREATE products', async function() {
+        await setupProducts.createProductsTable();
+        const doesExist = await dbTools.tableExists(productsTableName);      
+        expect(doesExist).to.be.true;
+      });
 
-    //   it('CREATE INDEX for products name', async function() {
-    //     await setupProducts.createProductsIndex(setupProducts.products_name_index_name, setupProducts.nameColName);
-    //     const doesExist = await dbTools.indexExists(setupProducts.products_name_index_name);
-    //     expect(doesExist).to.be.true;
-    //   });
+      it('CREATE INDEX for products name', async function() {
+        await setupProducts.createProductsIndex(setupProducts.products_name_index_name, setupProducts.nameColName);
+        const doesExist = await dbTools.indexExists(setupProducts.products_name_index_name);
+        expect(doesExist).to.be.true;
+      });
 
-    //   it('CREATE INDEX for products model_number', async function() {
-    //     await setupProducts.createProductsIndex(setupProducts.products_model_number_index_name, setupProducts.modelNumberColName);
-    //     const doesExist = await dbTools.indexExists(setupProducts.products_model_number_index_name);
-    //     expect(doesExist).to.be.true;
-    //   });
+      it('CREATE INDEX for products model_number', async function() {
+        await setupProducts.createProductsIndex(setupProducts.products_model_number_index_name, setupProducts.modelNumberColName);
+        const doesExist = await dbTools.indexExists(setupProducts.products_model_number_index_name);
+        expect(doesExist).to.be.true;
+      });
 
-    //   it('INSERT new products', async function() {
-    //     const numInserted = await setupProducts.insertAllProducts(); 
-    //     expect(numInserted).to.equal(productCount);
-    //   });
-    // });
+      it('INSERT new products', async function() {
+        const numInserted = await setupProducts.insertAllProducts(); 
+        expect(numInserted).to.equal(productCount);
+      });
+    });
 
     describe('GET /products', function() {
 
@@ -169,8 +170,147 @@ function testProducts(app) {
             .expect(404);
         });
       });
-    })
+    });
 
+    describe('POST /products', function() {
+
+      const newProduct = {
+        "name": "Child Shoveler",
+        "model_number": "100-301-01",
+        "description": "Child with chore to shovel snow",
+        "price": 99.99
+      };
+      const invalidProduct = {   
+        "name": "Child Shoveler",     
+        "model_number": "100-301-02",
+        "description": "Child with chore to shovel snow",
+        "price": 99.99
+      };
+      const resetSqlCommand = `
+        DELETE FROM products         
+        WHERE model_number = '100-301-01';`
+
+      before('before first POST', async function() {
+        await db.query(resetSqlCommand);
+      })
+
+      after('after last POST', async function() {
+        await db.query(resetSqlCommand);
+      });
+
+      it('post a new product with valid data', async function() {
+        const response = await request(app)
+          .post('/products')
+          .send(newProduct)
+          .expect(201);
+        const psotedProduct = response.body;
+        assert.equal(psotedProduct.name, newProduct.name);
+        assert.equal(psotedProduct.model_number, newProduct.model_number);
+        assert.equal(psotedProduct.description, newProduct.description);
+        assert.equal(psotedProduct.price, newProduct.price);
+      });
+
+      it('did NOT post product with a duplicate name', async function() {
+        return await request(app)
+          .post('/products')
+          .send(invalidProduct)
+          .expect(404);
+      });
+
+      it('did NOT post product with a duplicate model_number', async function() {
+        invalidProduct.name = 'Parent Shoveler';
+        invalidProduct.model_number = newProduct.model_number;
+        return await request(app)
+          .post('/products')
+          .send(invalidProduct)
+          .expect(404);
+      });
+
+      it('did NOT post product with no name', async function() {
+        invalidProduct.name = null;
+        invalidProduct.model_number = '100-301-02';
+        return await request(app)
+          .post('/products')
+          .send(invalidProduct)
+          .expect(404);
+      });
+
+      it('did NOT post product with no model_number', async function() {
+        invalidProduct.name = 'Parent Shoveler';
+        invalidProduct.model_number = null;
+        return await request(app)
+          .post('/products')
+          .send(invalidProduct)
+          .expect(404);
+      });
+
+      it('did NOT post product with no description', async function() {
+        invalidProduct.model_number = '100-301-02';
+        invalidProduct.description = null;
+        return await request(app)
+          .post('/products')
+          .send(invalidProduct)
+          .expect(404);
+      });
+
+      it('did NOT post product with no description', async function() {
+        invalidProduct.description = 'Only when no kids are around';
+        invalidProduct.price = null;
+        return await request(app)
+          .post('/products')
+          .send(invalidProduct)
+          .expect(404);
+      });
+      
+    });
+
+    describe('DELETE /products/:id', function() {
+
+      const tpDelProduct = {
+        "name": "Child Shoveler",
+        "model_number": "100-301-01",
+        "description": "Child with chore to shovel snow",
+        "price": 99.99
+      };
+
+      let delProductId;
+      before('before DELETE tests', async function() {
+        const sqlCommand = `
+          INSERT INTO products (name, model_number, description, price) 
+          VALUES ($1, $2, $3, $4) RETURNING *`;
+        const rowValues = [tpDelProduct.name, tpDelProduct.model_number, tpDelProduct.description, tpDelProduct.price];
+        const response = await db.query(sqlCommand, rowValues)
+        const postedProduct = response.rows[0];
+        delProductId = postedProduct.id;
+      });
+
+      describe('Valid deletes /product/:id', function() {
+
+        it('deletes a product', async function() {
+          const response = await request(app)
+            .delete(`/products/${delProductId}`)
+            .expect(200);
+          const productId = parseInt(response.text);
+          expect(productId).to.equal(delProductId);
+        });
+      });
+
+      describe('invalid deletes /product/:id', function() {
+
+        it('called with an product id that is not in database', function() {
+          return request(app)
+            .delete('/products/1234567890')
+            .expect(404);
+        });
+
+        it('called with a non-numeric product id', function() {
+          return request(app)
+            .delete('/products/ABC')
+            .expect(404);
+        });
+      });
+
+    });
   });
 
 };

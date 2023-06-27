@@ -183,7 +183,7 @@ function testUsers(app) {
   
     });
   
-    describe('POST /user', function() {
+    describe('POST /users', function() {
   
       const newUser = {        
         "email": "fred@email.com",
@@ -274,10 +274,10 @@ function testUsers(app) {
   
     });
   
-    describe('DELETE /user/:id', function() {
+    describe('DELETE /users/:id', function() {
       const delUserId = 2;
   
-      describe('Valid /users/:id', function() {
+      describe('Valid deletes /users/:id', function() {
         
         it('deletes a user', function() {
           return request(app)
@@ -290,7 +290,7 @@ function testUsers(app) {
         });      
       });
   
-      describe('Invalid /users/:id', function() {
+      describe('Invalid deletes /users/:id', function() {
   
         it('called with an user id that is not in database', function() {
           return request(app)

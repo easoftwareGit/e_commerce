@@ -81,11 +81,10 @@ usersRouter.post('/', async (req, res) => {
     VALUES ($1, $2, $3, $4, $5) RETURNING *`;
   try {
     const results = await db.query(sqlCommand, rowValues);
-    if (db.validResultsAtLeast1Row(results)) {
-      // console.log(`new user ${results.rows[0].email} posted with id ${results.rows[0].id}`);
+    if (db.validResultsAtLeast1Row(results)) {      
       res.status(201).json(results.rows[0]);      
     } else {
-      res.status(404).json('User not added');
+      res.status(404).json('User not inserted');
     }    
   } catch (err) {
     // console.log(`err code = ${err.code}`);
