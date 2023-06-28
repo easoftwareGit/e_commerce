@@ -173,7 +173,7 @@ function testUsers(app) {
             .expect(404);
         })
   
-        it('called with an invalid ID returns a 404 error', function() {
+        it('called with an non existing ID returns a 404 error', function() {
           return request(app)
             .put('/users/1234567890')
             .send(testUser)

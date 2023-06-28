@@ -60,4 +60,3 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO testname;
 SELECT grantee, table_schema, table_name, privilege_type
 FROM information_schema.table_privileges
 WHERE grantee = 'testname';
-

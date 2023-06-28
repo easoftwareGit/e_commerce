@@ -10,6 +10,19 @@ function dropTable(name) {
   }
 };
 
+async function foreignKeyExists(name) {
+  const sqlCommand = `
+    SELECT * FROM information_schema.table_constraints 
+    WHERE constraint_name = '${name}'`;
+  // SELECT * FROM information_schema.table_constraints WHERE constraint_name = 'carts_user_id_fkey';
+  try {
+    const results = await db.query(sqlCommand); 
+    return db.validResultsAtLeast1Row(results);
+  } catch (err) {
+    return err;
+  }  
+};
+
 async function indexExists(name) {
   const sqlCommand = `
     SELECT *
@@ -38,6 +51,7 @@ async function tableExists(name) {
 
 module.exports = { 
   dropTable,
+  foreignKeyExists,
   indexExists,
   tableExists 
 };

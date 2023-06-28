@@ -102,7 +102,7 @@ async function insertAllUsers() {
       const user = users[i];
       const { email, password_hash, first_name, last_name, phone } = user;
       const rowValues = [email, password_hash, first_name, last_name, phone];      
-      await db.query(sqlCommand, rowValues);      
+      await db.query(sqlCommand, rowValues);
     }
     return users.length;
   } catch (error) {

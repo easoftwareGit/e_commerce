@@ -116,7 +116,7 @@ function testProducts(app) {
       });
     });
 
-    describe('PUT .products/:id', function() {
+    describe('PUT /products/:id', function() {
       const putProductId = 2;
       const resetSqlCommand = `
         UPDATE products 
@@ -266,19 +266,19 @@ function testProducts(app) {
 
     describe('DELETE /products/:id', function() {
 
-      const tpDelProduct = {
+      const toDelProduct = {
         "name": "Child Shoveler",
         "model_number": "100-301-01",
         "description": "Child with chore to shovel snow",
         "price": 99.99
       };
-
       let delProductId;
+
       before('before DELETE tests', async function() {
         const sqlCommand = `
           INSERT INTO products (name, model_number, description, price) 
           VALUES ($1, $2, $3, $4) RETURNING *`;
-        const rowValues = [tpDelProduct.name, tpDelProduct.model_number, tpDelProduct.description, tpDelProduct.price];
+        const rowValues = [toDelProduct.name, toDelProduct.model_number, toDelProduct.description, toDelProduct.price];
         const response = await db.query(sqlCommand, rowValues)
         const postedProduct = response.rows[0];
         delProductId = postedProduct.id;
