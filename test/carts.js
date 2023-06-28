@@ -333,14 +333,10 @@ function testCarts(app) {
       let delCartId;
 
       before('before DELETE tests', async function() {
-        const sqlCommand = `
-          INSERT INTO carts (created, modified, user_id) 
-          VALUES ($1, $2, $3) 
-          RETURNING *`;
-        const { created, modified, user_id } = toDelCart;
-        const rowValues = [created, modified, user_id];
-        const response = await db.query(sqlCommand, rowValues);
-        const postedCart = response.rows[0];
+        const response = await request(app)
+          .post('/carts')
+          .send(toDelCart);
+        const postedCart = response.body;
         delCartId = postedCart.id;
       });
 

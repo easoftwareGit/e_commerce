@@ -38,7 +38,14 @@ const users = [
     'first_name': 'Eric',
     'last_name': 'Johnson',
     'phone': '800 555-1234'
-  }    
+  },
+  {        
+    "email": "fred@email.com",
+    "password_hash": "123456",
+    "first_name": "Fred",
+    "last_name": "Green",
+    "phone": "800 555-4321"
+  }
 ];
 
 const userCount = users.length;
@@ -50,7 +57,7 @@ async function createUserEmailIndex() {
   } catch (err) {
     return err;
   }
-}
+};
 
 function createUsersTable() {
   const sqlCreateTable = `CREATE TABLE IF NOT EXISTS ${tableName} (

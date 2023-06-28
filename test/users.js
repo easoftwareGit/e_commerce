@@ -42,68 +42,58 @@ function testUsers(app) {
   
     describe('GET /users', function() {
   
-      it('returns an array', function() {
-        return request(app)
+      it('returns an array', async function() {
+        const response = await request(app)
           .get('/users')
-          .expect(200)
-          .then((response) => {
-            expect(response.body).to.be.an.instanceOf(Array);
-          });
+          .expect(200);
+        expect(response.body).to.be.an.instanceOf(Array);
       });
         
-      it('returns an array of all users', function() {
-        return request(app)
+      it('returns an array of all users', async function() {
+        const response = await request(app)
           .get('/users')
-          .expect(200)
-          .then((response) => {          
-            expect(response.body.length).to.be.equal(userCount);
-            response.body.forEach((user) => {
-              expect(user).to.have.ownProperty('id');
-              expect(user).to.have.ownProperty('password_hash');
-              expect(user).to.have.ownProperty('first_name');
-              expect(user).to.have.ownProperty('last_name');
-              expect(user).to.have.ownProperty('phone');
-            });
-          });
+          .expect(200);
+        expect(response.body.length).to.be.equal(userCount);
+        response.body.forEach((user) => {
+          expect(user).to.have.ownProperty('id');
+          expect(user).to.have.ownProperty('password_hash');
+          expect(user).to.have.ownProperty('first_name');
+          expect(user).to.have.ownProperty('last_name');
+          expect(user).to.have.ownProperty('phone');
+        });
       });
     });
   
     describe('GET /users/:id', function() {
       const getUserId = 2;
   
-      it('returns a single user object', function() {
-        return request(app)
+      it('returns a single user object', async function() {
+        const response = await request(app)
           .get(`/users/${getUserId}`)
-          .expect(200)
-          .then((response) => {
-            const user = response.body;
-            expect(user).to.be.an.instanceOf(Object);
-            expect(user).to.not.be.an.instanceOf(Array);
-          });
+          .expect(200);
+        const user = response.body;
+        expect(user).to.be.an.instanceOf(Object);
+        expect(user).to.not.be.an.instanceOf(Array);
       });
   
-      it('returns a full user object', function() {
-        return request(app)
+      it('returns a full user object', async function() {
+        const response = await request(app)
           .get(`/users/${getUserId}`)
-          .expect(200)
-          .then((response) => {
-            const user = response.body;
-            expect(user).to.have.ownProperty('id');
-            expect(user).to.have.ownProperty('password_hash');
-            expect(user).to.have.ownProperty('first_name');
-            expect(user).to.have.ownProperty('last_name');
-            expect(user).to.have.ownProperty('phone');
-        });
+          .expect(200);
+        const user = response.body;
+        expect(user).to.have.ownProperty('id');
+        expect(user).to.have.ownProperty('password_hash');
+        expect(user).to.have.ownProperty('first_name');
+        expect(user).to.have.ownProperty('last_name');
+        expect(user).to.have.ownProperty('phone');
       });
   
-      it('returned user has the correct id', function() {
-        return request(app)
+      it('returned user has the correct id', async function() {
+        const response = await request(app)
           .get(`/users/${getUserId}`)
-          .expect(200)
-          .then((response) => {
-            const user = response.body;
-            expect(user.id).to.be.an.equal(getUserId);
-        });
+          .expect(200);
+        const user = response.body;
+        expect(user.id).to.be.an.equal(getUserId);
       });
   
       it('called with a non-numeric ID returns a 404 error', function() {
@@ -127,33 +117,44 @@ function testUsers(app) {
         WHERE id = 2;`
   
       describe('Valid /users/:id', function() {
-        before('before 1st PUT test', function() {
-          db.query(resetSqlCommand);
+
+        before('before 1st PUT test', async function() {
+          await db.query(resetSqlCommand);
         });
   
-        afterEach('afterEach PUT test ', function() {      
-          db.query(resetSqlCommand);
+        afterEach('afterEach PUT test ', async function() {
+          await db.query(resetSqlCommand);
         });
   
         it('updates the correct user and returns it', async function() {
           let initialUser;
           let updatedUser;      
           
-          return await request(app)
-            .get(`/users/${putUserId}`)
-            .then((response) => {          
-              initialUser = response.body;
-            })
-            .then(async () => {          
-              updatedUser = Object.assign({}, initialUser, {first_name: 'Bill'});
-              return await request(app)
-                .put(`/users/${putUserId}`)
-                .send(updatedUser)
-                .expect(200)
-            })
-            .then((response) => {
-              expect(response.body).to.be.deep.equal(updatedUser);
-            })
+          const response = await request(app)
+            .get(`/users/${putUserId}`);
+          initialUser = response.body;
+          updatedUser = Object.assign({}, initialUser, {first_name: 'Bill'});
+          const response_1 = await request(app)
+            .put(`/users/${putUserId}`)
+            .send(updatedUser)
+            .expect(200);
+          expect(response_1.body).to.be.deep.equal(updatedUser);
+
+          // return await request(app)
+          //   .get(`/users/${putUserId}`)
+          //   .then((response) => {          
+          //     initialUser = response.body;
+          //   })
+          //   .then(async () => {          
+          //     updatedUser = Object.assign({}, initialUser, {first_name: 'Bill'});
+          //     return await request(app)
+          //       .put(`/users/${putUserId}`)
+          //       .send(updatedUser)
+          //       .expect(200)
+          //   })
+          //   .then((response) => {
+          //     expect(response.body).to.be.deep.equal(updatedUser);
+          //   })
         });
       });
   
@@ -186,32 +187,41 @@ function testUsers(app) {
     describe('POST /users', function() {
   
       const newUser = {        
-        "email": "fred@email.com",
-        "password_hash": "123456",
-        "first_name": "Fred",
-        "last_name": "Green",
-        "phone": "800 555-4321"
+        "email": "greg@email.com",
+        "password_hash": "098765",
+        "first_name": "Greg",
+        "last_name": "Blue",
+        "phone": "800 555-8888"
       };
       const invalidUser = {
-        "password_hash": "123456",
-        "first_name": "Fred",
-        "last_name": "Green",
-        "phone": "800 555-4567"  
+        "password_hash": "098765",
+        "first_name": "Greg",
+        "last_name": "Blue",
+        "phone": "800 555-8888"
       };
-  
+      const resetSqlCommand = `
+        DELETE FROM users         
+        WHERE email = 'greg@email.com';`
+
+      before('before first POST test', async function() {
+        await db.query(resetSqlCommand);
+      });
+
+      after('after last POST test', async function() {
+        await db.query(resetSqlCommand);
+      });
+
       it('post a new user with valid data', async function() {
-        return await request(app)
+        const response = await request(app)
           .post('/users')
           .send(newUser)
-          .expect(201)
-          .then((response) => {
-            const postedUser = response.body;
-            assert.equal(postedUser.email, newUser.email);
-            assert.equal(postedUser.password_hash, newUser.password_hash);
-            assert.equal(postedUser.first_name, newUser.first_name);
-            assert.equal(postedUser.last_name, newUser.last_name);
-            assert.equal(postedUser.phone, newUser.phone);
-          });
+          .expect(201);
+        const postedUser = response.body;
+        assert.equal(postedUser.email, newUser.email);
+        assert.equal(postedUser.password_hash, newUser.password_hash);
+        assert.equal(postedUser.first_name, newUser.first_name);
+        assert.equal(postedUser.last_name, newUser.last_name);
+        assert.equal(postedUser.phone, newUser.phone);
       });
   
       it('did NOT post user with a duplicate email', async function() {
@@ -271,22 +281,35 @@ function testUsers(app) {
           .send(invalidUser)
           .expect(404);
       });
-  
     });
   
     describe('DELETE /users/:id', function() {
-      const delUserId = 2;
+
+      const toDelUser = {
+        "email": "greg@email.com",
+        "password_hash": "098765",
+        "first_name": "Greg",
+        "last_name": "Blue",
+        "phone": "800 555-8888"    
+      }
+      let delUserId;
   
+      before('before DELETE tests', async function() {
+        const response = await request(app)
+          .post('/users')
+          .send(toDelUser);
+        const postedUser = response.body;
+        delUserId = postedUser.id;
+      });
+
       describe('Valid deletes /users/:id', function() {
         
-        it('deletes a user', function() {
-          return request(app)
+        it('deletes a user', async function() {
+          const response = await request(app)
             .delete(`/users/${delUserId}`)
-            .expect(200)
-            .then((response) => {
-              const userId = parseInt(response.text);
-              expect(userId).to.equal(delUserId);
-            })
+            .expect(200);
+          const userId = parseInt(response.text);
+          expect(userId).to.equal(delUserId);
         });      
       });
   

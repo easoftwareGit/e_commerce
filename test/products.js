@@ -190,11 +190,11 @@ function testProducts(app) {
         DELETE FROM products         
         WHERE model_number = '100-301-01';`
 
-      before('before first POST', async function() {
+      before('before first POST test', async function() {
         await db.query(resetSqlCommand);
       })
 
-      after('after last POST', async function() {
+      after('after last POST test', async function() {
         await db.query(resetSqlCommand);
       });
 
@@ -275,12 +275,10 @@ function testProducts(app) {
       let delProductId;
 
       before('before DELETE tests', async function() {
-        const sqlCommand = `
-          INSERT INTO products (name, model_number, description, price) 
-          VALUES ($1, $2, $3, $4) RETURNING *`;
-        const rowValues = [toDelProduct.name, toDelProduct.model_number, toDelProduct.description, toDelProduct.price];
-        const response = await db.query(sqlCommand, rowValues)
-        const postedProduct = response.rows[0];
+        const response = await request(app)
+          .post('/products')
+          .send(toDelProduct);
+        const postedProduct = response.body;
         delProductId = postedProduct.id;
       });
 
