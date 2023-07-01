@@ -1,7 +1,9 @@
-const db = require('../db/db');
+const db = require('../../db/db');
 
-const tableName = 'users';
-const user_email_index_name = 'users_email_idx';
+const { 
+  usersTableName, 
+  user_email_index_name 
+} = require('../myConsts');
 
 const users = [
   {  
@@ -51,7 +53,7 @@ const users = [
 const userCount = users.length;
 
 async function createUserEmailIndex() {
-  const sqlCreateIndex = `CREATE UNIQUE INDEX IF NOT EXISTS ${user_email_index_name} ON ${tableName} (email);`;
+  const sqlCreateIndex = `CREATE UNIQUE INDEX IF NOT EXISTS ${user_email_index_name} ON ${usersTableName} (email);`;
   try {
     return await db.query(sqlCreateIndex);
   } catch (err) {
@@ -60,7 +62,7 @@ async function createUserEmailIndex() {
 };
 
 function createUsersTable() {
-  const sqlCreateTable = `CREATE TABLE IF NOT EXISTS ${tableName} (
+  const sqlCreateTable = `CREATE TABLE IF NOT EXISTS ${usersTableName} (
     "id"            integer     PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     "email"         varchar     NOT NULL UNIQUE,
     "password_hash" TEXT        NOT NULL,
@@ -75,33 +77,9 @@ function createUsersTable() {
   }
 };
 
-// async function insertUser(user) {
-//   const { email, password_hash, first_name, last_name, phone } = user;
-//   const rowValues = [email, password_hash, first_name, last_name, phone];
-//   const sqlCommand = `
-//     INSERT INTO ${tableName} (email, password_hash, first_name, last_name, phone) 
-//     VALUES ($1, $2, $3, $4, $5) 
-//     RETURNING *`;
-//   try {
-//     return await db.query(sqlCommand, rowValues);    
-//   } catch (error) {
-//     return error;
-//   }
-// };
-
-// async function insertUsers() {
-//   for (let i = 0; i < users.length; i++) {
-//     const user = users[i];    
-//     await insertUser(user, usersTableName);
-//   } 
-//   return users.length;
-// };
-
 async function insertAllUsers() {
-  // const { email, password_hash, first_name, last_name, phone } = user;
-  // const rowValues = [email, password_hash, first_name, last_name, phone];
   const sqlCommand = `
-    INSERT INTO ${tableName} (email, password_hash, first_name, last_name, phone) 
+    INSERT INTO ${usersTableName} (email, password_hash, first_name, last_name, phone) 
     VALUES ($1, $2, $3, $4, $5) 
     RETURNING *`;
   try {
@@ -118,8 +96,6 @@ async function insertAllUsers() {
 }
 
 module.exports = {
-  tableName,
-  user_email_index_name,  
   userCount,
   createUserEmailIndex, 
   createUsersTable,   

@@ -152,7 +152,12 @@ usersRouter.delete('/:id', async (req, res) => {
       res.status(404).send(`User not found`);
     }
   } catch (err) {
-    throw Error(err);
+    // console.log(`err code = ${err.code}`);
+    if (err.code === '23503') {
+      res.status(409).send('Cannot delete - constraint error');
+    } else {
+      throw Error(err);
+    }
   }
 });
 

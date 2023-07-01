@@ -1,21 +1,23 @@
 const expect = require('chai').expect;
 const request = require('supertest');
-const db = require('../db/db');
+const db = require('../../db/db');
 
-const dbTools = require('../db/dbTools');
+const dbTools = require('../../db/dbTools');
 const { assert } = require('chai');
 
 const setupCarts = require('./setupCarts');
 const cartCount = setupCarts.cartCount;
 
+const {
+  cartsTableName,
+  cartsUserIdforeignKeyName
+} = require('../myConsts');
+
 function testCarts(app) {
 
-  describe('/cart routes', function() {
+  describe('/carts routes', function() {
 
     describe('setup carts table', function() {
-
-      const cartsTableName = setupCarts.tableName;
-      const foreignKeyName = setupCarts.foreignKeyName;
 
       it('DROP carts', async function() {
         await dbTools.dropTable(cartsTableName);
@@ -30,7 +32,7 @@ function testCarts(app) {
       });
       
       it('check for carts FOREIGN KEY', async function() {        
-        const doesExist = await dbTools.foreignKeyExists(foreignKeyName);      
+        const doesExist = await dbTools.foreignKeyExists(cartsUserIdforeignKeyName);      
         expect(doesExist).to.be.true;
       });
 
@@ -41,11 +43,10 @@ function testCarts(app) {
       
     });
 
-    describe('test ON DELETE CASCADE for users->cart', function() {
-
+    describe('cannot DELETE users with a cart', function() {
       let testUserId;
       let testCartId;
-
+      
       before('insert test user', async function() {
         const user = {  
           'email': 'greg@email.com',
@@ -82,13 +83,13 @@ function testCarts(app) {
         testCartId = testCart.id;
       });
 
-      after('delete test cart', async function() {
-        const sqlCommand = `SELECT * FROM carts WHERE id = ${testCartId}`;
+      after('delete test cart', async function() {    
+        const sqlCommand = `DELETE FROM carts WHERE id = ${testCartId}`;    
         await db.query(sqlCommand);
       });
 
       after('delete test user', async function() {
-        const sqlCommand = `SELECT * FROM users WHERE id = ${testUserId}`;
+        const sqlCommand = `DELETE FROM users WHERE id = ${testUserId}`;
         await db.query(sqlCommand);
       });
 
@@ -106,19 +107,12 @@ function testCarts(app) {
         expect(doesExist).to.be.true;
       });
 
-      it('DELETE test user', async function() {
-        const sqlCommand = `DELETE FROM users WHERE id = ${testUserId};`
-        const response = await db.query(sqlCommand);
-        expect(response.rowCount).to.equal(1);
+      it('try to DELETE user that has a cart', async function() {
+        // const response = await request(app)
+        return await request(app)
+          .delete(`/users/${testUserId}`)
+          .expect(409);   // constraint error
       });
-
-      it('test cart DOES NOT exists after DELETE user', async function() {
-        const sqlCommand = `SELECT * FROM carts WHERE id = ${testCartId}`;
-        const response = await db.query(sqlCommand);
-        const wasDeleted = response.rows.length === 0;
-        expect(wasDeleted).to.be.true;
-      });
-
     });
 
     describe('/GET carts', function() {
@@ -189,20 +183,25 @@ function testCarts(app) {
     });
 
     describe('PUT /carts/:id', function() {
-      const putCartId = 2;
+      const putCartId = 2;      
       const resetSqlCommand = `
         UPDATE carts 
-        SET created = '01/03/2023', moodified = '01/04/2023'
-        WHERE id = 2;`
-
+        SET created = '01/03/2023', modified = '01/04/2023'
+        WHERE id = 2;`;
+      const testCart = {        
+        "created": new Date('05/25/23'),
+        "modified": new Date('05/26/23'),
+        "user_id": 3
+      };
+  
       describe('Valid /carts/:id', function() {
 
-        before('before 1st PUT test', function() {
-          db.query(resetSqlCommand);
+        before('before 1st PUT test', async function() {
+          await db.query(resetSqlCommand);
         });
   
-        afterEach('afterEach PUT test ', function() {      
-          db.query(resetSqlCommand);
+        afterEach('afterEach PUT test ', async function() {      
+          await db.query(resetSqlCommand);
         });
 
         it('updates the correct cart and returns it', async function() {
@@ -212,9 +211,7 @@ function testCarts(app) {
           const response = await request(app)
             .get(`/carts/${putCartId}`);
           initialCart = response.body;
-          initialCart.created = new Date(initialCart.created);
-          initialCart.modified = new Date(initialCart.modified);
-          updatedCart = Object.assign({}, initialCart, { modified: new Date('01/05/2023') });
+          updatedCart = Object.assign({}, testCart);
           const response_1 = await request(app)
             .put(`/carts/${putCartId}`)
             .send(updatedCart)
@@ -340,7 +337,7 @@ function testCarts(app) {
         delCartId = postedCart.id;
       });
 
-      describe('Valid deletes /carts/:id', function() {
+      describe('Valid DELETE /carts/:id', function() {
 
         it('deletes a cart', async function() {
           const response = await request(app)
@@ -349,10 +346,9 @@ function testCarts(app) {
           const cartId = parseInt(response.text);
           expect(cartId).to.equal(delCartId);
         });
-
       });
 
-      describe('Invalid deletes /carts/:id', function() {
+      describe('Invalid DELETE /carts/:id', function() {
 
         it('called with a non-numeric user id', function() {
           return request(app)

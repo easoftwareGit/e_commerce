@@ -1,20 +1,23 @@
 const expect = require('chai').expect;
 const request = require('supertest');
-const db = require('../db/db');
+const db = require('../../db/db');
 
-const dbTools = require('../db/dbTools');
+const dbTools = require('../../db/dbTools');
 const { assert } = require('chai');
 
 const setupUsers = require('./setupUsers');
 const userCount = setupUsers.userCount;
+
+const { 
+  usersTableName, 
+  user_email_index_name 
+} = require('../myConsts');
 
 function testUsers(app) {
 
   describe('/user routes', function() {
   
     describe('setup users table', function() {
-  
-      const usersTableName = setupUsers.tableName;
   
       it('DROP users', async function() {
         await dbTools.dropTable(usersTableName);      
@@ -30,7 +33,7 @@ function testUsers(app) {
   
       it('CREATE INDEX for users email', async function() {
         await setupUsers.createUserEmailIndex();      
-        const doesExist = await dbTools.indexExists(setupUsers.user_email_index_name);
+        const doesExist = await dbTools.indexExists(user_email_index_name);
         expect(doesExist).to.be.true;
       });
   
@@ -115,7 +118,14 @@ function testUsers(app) {
         UPDATE users 
         SET email = 'bill@gmail.com', password_hash = 'abcdef', first_name = 'Bill', last_name = 'Smith', phone = '800-555-5555'
         WHERE id = 2;`
-  
+      const testUser = {        
+        "email": "bob@email.com",
+        "password_hash": "zyxwvu",
+        "first_name": "Bob",
+        "last_name": "Jones",
+        "phone": "(800) 555-2211"      
+      };
+
       describe('Valid /users/:id', function() {
 
         before('before 1st PUT test', async function() {
@@ -132,40 +142,18 @@ function testUsers(app) {
           
           const response = await request(app)
             .get(`/users/${putUserId}`);
-          initialUser = response.body;
-          updatedUser = Object.assign({}, initialUser, {first_name: 'Bill'});
+          initialUser = response.body;          
+          updatedUser = Object.assign({}, testUser);
+          updatedUser.id = putUserId;
           const response_1 = await request(app)
             .put(`/users/${putUserId}`)
             .send(updatedUser)
             .expect(200);
           expect(response_1.body).to.be.deep.equal(updatedUser);
-
-          // return await request(app)
-          //   .get(`/users/${putUserId}`)
-          //   .then((response) => {          
-          //     initialUser = response.body;
-          //   })
-          //   .then(async () => {          
-          //     updatedUser = Object.assign({}, initialUser, {first_name: 'Bill'});
-          //     return await request(app)
-          //       .put(`/users/${putUserId}`)
-          //       .send(updatedUser)
-          //       .expect(200)
-          //   })
-          //   .then((response) => {
-          //     expect(response.body).to.be.deep.equal(updatedUser);
-          //   })
         });
       });
   
       describe('Invalid PUT /users/:id', function() {
-        const testUser = {        
-          "email": "bob@email.com",
-          "password_hash": "zyxwvu",
-          "first_name": "Bob",
-          "last_name": "Jones",
-          "phone": "(800) 555-2211"      
-        };
   
         it('called with a non-numeric ID returns a 404 error', function() {
           return request(app)
@@ -185,8 +173,7 @@ function testUsers(app) {
     });
   
     describe('POST /users', function() {
-  
-      const newUser = {        
+        const newUser = {        
         "email": "greg@email.com",
         "password_hash": "098765",
         "first_name": "Greg",

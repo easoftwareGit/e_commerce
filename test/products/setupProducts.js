@@ -1,10 +1,8 @@
-const db = require('../db/db');
+const db = require('../../db/db');
 
-const tableName = 'products';
-const nameColName = 'name';
-const products_name_index_name = 'products_name_idx';
-const modelNumberColName = 'model_number';
-const products_model_number_index_name = 'products_model_number_idx';
+const {
+  productsTableName 
+} = require('../myConsts');
 
 const products = [
   {		
@@ -36,7 +34,7 @@ const products = [
 const productCount = products.length;
 
 async function createProductsIndex(indexName, columnName) {  
-  const sqlCreateIndex = `CREATE UNIQUE INDEX IF NOT EXISTS ${indexName} ON ${tableName} (${columnName});`;
+  const sqlCreateIndex = `CREATE UNIQUE INDEX IF NOT EXISTS ${indexName} ON ${productsTableName} (${columnName});`;
   try {
     return await db.query(sqlCreateIndex);
   } catch (err) {
@@ -45,7 +43,7 @@ async function createProductsIndex(indexName, columnName) {
 };
 
 function createProductsTable() {
-  const sqlCreateTable = `CREATE TABLE IF NOT EXISTS ${tableName} (
+  const sqlCreateTable = `CREATE TABLE IF NOT EXISTS ${productsTableName} (
     "id"            integer   PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     "name"          varchar   NOT NULL UNIQUE,
     "model_number"  varchar   NOT NULL UNIQUE,
@@ -61,7 +59,7 @@ function createProductsTable() {
 
 async function insertAllProducts() {
   const sqlCommand = `
-    INSERT INTO ${tableName} (name, model_number, description, price)
+    INSERT INTO ${productsTableName} (name, model_number, description, price)
     VALUES ($1, $2, $3, $4) 
     RETURNING *`;
   try {
@@ -78,11 +76,6 @@ async function insertAllProducts() {
 };
 
 module.exports = {
-  tableName,
-  nameColName,  
-  products_name_index_name,
-  modelNumberColName,
-  products_model_number_index_name,
   productCount,
   createProductsIndex,
   createProductsTable,

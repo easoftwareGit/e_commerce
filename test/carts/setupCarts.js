@@ -1,10 +1,10 @@
-const db = require('../db/db');
+const db = require('../../db/db');
 
-const tableName = 'carts';
-const fkColName = 'user_id';
-const foreignKeyName = tableName + '_' + fkColName + '_fkey';
-const usersTableName = 'users';
-const usersKeyColName = 'id';
+const {
+  cartsTableName,
+  usersKeyColName,
+  usersTableName
+} = require('../myConsts');
 
 const carts = [
   {
@@ -27,22 +27,22 @@ const carts = [
 const cartCount = carts.length;
 
 async function createCartsTable() {
-  const sqlCreateTable = `CREATE TABLE IF NOT EXISTS ${tableName} (
+  const sqlCreateTable = `CREATE TABLE IF NOT EXISTS ${cartsTableName} (
     "id"          integer     PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     "created"     DATE        NOT NULL,
     "modified"    DATE        NOT NULL CHECK (modified >= created),
-    "user_id"     integer     NOT NULL UNIQUE REFERENCES ${usersTableName}(${usersKeyColName}) ON DELETE CASCADE
+    "user_id"     integer     NOT NULL UNIQUE REFERENCES ${usersTableName}(${usersKeyColName})
   );`;
   try {
     return await db.query(sqlCreateTable);
-  } catch (err) {
-    return err;
+  } catch (error) {
+    return error;
   }
 };
 
 async function insertAllCarts() {
   const sqlCommand = `
-    INSERT INTO ${tableName} (created, modified, user_id) 
+    INSERT INTO ${cartsTableName} (created, modified, user_id) 
     VALUES ($1, $2, $3) 
     RETURNING *`;
   try {
@@ -59,8 +59,6 @@ async function insertAllCarts() {
 };
 
 module.exports = {
-  tableName,
-  foreignKeyName,
   cartCount,
   createCartsTable,  
   insertAllCarts

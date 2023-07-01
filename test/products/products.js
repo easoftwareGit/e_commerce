@@ -1,21 +1,27 @@
 const expect = require('chai').expect;
 const request = require('supertest');
-const db = require('../db/db');
+const db = require('../../db/db');
 
-const dbTools = require('../db/dbTools');
+const dbTools = require('../../db/dbTools');
 const { assert } = require('chai');
 
 const setupProducts = require('./setupProducts');
 const { response } = require('express');
 const productCount = setupProducts.productCount;
 
+const {
+  productsTableName, 
+  nameColName, 
+  products_name_index_name,
+  modelNumberColName,
+  products_model_number_index_name
+} = require('../myConsts');
+
 function testProducts(app) {
 
   describe('/products routes', function() {
 
-    describe('setup products table', function() {
-
-      const productsTableName = setupProducts.tableName;
+    describe('setup products table', function() {      
 
       it("DROP products", async function() {
         await dbTools.dropTable(productsTableName);
@@ -30,14 +36,14 @@ function testProducts(app) {
       });
 
       it('CREATE INDEX for products name', async function() {
-        await setupProducts.createProductsIndex(setupProducts.products_name_index_name, setupProducts.nameColName);
-        const doesExist = await dbTools.indexExists(setupProducts.products_name_index_name);
+        await setupProducts.createProductsIndex(products_name_index_name, nameColName);
+        const doesExist = await dbTools.indexExists(products_name_index_name);
         expect(doesExist).to.be.true;
       });
 
       it('CREATE INDEX for products model_number', async function() {
-        await setupProducts.createProductsIndex(setupProducts.products_model_number_index_name, setupProducts.modelNumberColName);
-        const doesExist = await dbTools.indexExists(setupProducts.products_model_number_index_name);
+        await setupProducts.createProductsIndex(products_model_number_index_name, modelNumberColName);
+        const doesExist = await dbTools.indexExists(products_model_number_index_name);
         expect(doesExist).to.be.true;
       });
 
@@ -122,8 +128,15 @@ function testProducts(app) {
         UPDATE products 
         SET name = 'Snow Shovel Deluxe', model_number = '100-101-01', description = 'Snow Shovel, Deluxe 24 inch', price = 19.99
         WHERE id = 2;`
-
+      const testProduct = {        
+        "name": "Super Duper Snow Scooper",
+        "model_number": "100-111-01",
+        "description": "The best snow shovel you can buy",
+        "price": "999.99"        
+      };
+  
       describe('Valid /products/:id', function() {
+
         before('before 1st PUT test', function() {
           db.query(resetSqlCommand);
         });
@@ -138,8 +151,9 @@ function testProducts(app) {
 
           const response = await request(app)
             .get(`/products/${putProductId}`);
-          initialProduct = response.body;
-          updatedProduct = Object.assign({}, initialProduct, { name: 'Deluxe Snow Shovel' });
+          initialProduct = response.body;          
+          updatedProduct = Object.assign({}, testProduct);
+          updatedProduct.id = putProductId;
           const response_1 = await request(app)
             .put(`/products/${putProductId}`)
             .send(updatedProduct)
