@@ -10,7 +10,9 @@ const userCount = setupUsers.userCount;
 
 const { 
   usersTableName, 
-  user_email_index_name 
+  user_email_index_name,
+  cartsTableName,
+  ordersTableName 
 } = require('../myConsts');
 
 function testUsers(app) {
@@ -19,6 +21,20 @@ function testUsers(app) {
   
     describe('setup users table', function() {
   
+      before('before setup users, DROP orders', async function() {
+        const doesExist = await dbTools.tableExists(cartsTableName); 
+        if (doesExist) {
+          await dbTools.dropTable(cartsTableName);
+        }
+      });
+
+      before('before setup users, DROP orders', async function() {
+        const doesExist = await dbTools.tableExists(ordersTableName); 
+        if (doesExist) {
+          await dbTools.dropTable(ordersTableName);
+        }
+      });
+
       it('DROP users', async function() {
         await dbTools.dropTable(usersTableName);      
         const doesExist = await dbTools.tableExists(usersTableName);      
@@ -110,66 +126,6 @@ function testUsers(app) {
           .get('/users/1234567890')
           .expect(404);
       });
-    });
-  
-    describe('PUT /users/:id', function() {
-      const putUserId = 2;
-      const resetSqlCommand = `
-        UPDATE users 
-        SET email = 'bill@gmail.com', password_hash = 'abcdef', first_name = 'Bill', last_name = 'Smith', phone = '800-555-5555'
-        WHERE id = 2;`
-      const testUser = {        
-        "email": "bob@email.com",
-        "password_hash": "zyxwvu",
-        "first_name": "Bob",
-        "last_name": "Jones",
-        "phone": "(800) 555-2211"      
-      };
-
-      describe('Valid /users/:id', function() {
-
-        before('before 1st PUT test', async function() {
-          await db.query(resetSqlCommand);
-        });
-  
-        afterEach('afterEach PUT test ', async function() {
-          await db.query(resetSqlCommand);
-        });
-  
-        it('updates the correct user and returns it', async function() {
-          let initialUser;
-          let updatedUser;      
-          
-          const response = await request(app)
-            .get(`/users/${putUserId}`);
-          initialUser = response.body;          
-          updatedUser = Object.assign({}, testUser);
-          updatedUser.id = putUserId;
-          const response_1 = await request(app)
-            .put(`/users/${putUserId}`)
-            .send(updatedUser)
-            .expect(200);
-          expect(response_1.body).to.be.deep.equal(updatedUser);
-        });
-      });
-  
-      describe('Invalid PUT /users/:id', function() {
-  
-        it('called with a non-numeric ID returns a 404 error', function() {
-          return request(app)
-            .put('/users/ABC')
-            .send(testUser)
-            .expect(404);
-        })
-  
-        it('called with an non existing ID returns a 404 error', function() {
-          return request(app)
-            .put('/users/1234567890')
-            .send(testUser)
-            .expect(404);
-        })
-      });
-  
     });
   
     describe('POST /users', function() {
@@ -268,6 +224,87 @@ function testUsers(app) {
           .send(invalidUser)
           .expect(404);
       });
+    });
+  
+    describe('PUT /users/:id', function() {
+      const putUserId = 2;
+      const resetSqlCommand = `
+        UPDATE users 
+        SET email = 'bill@gmail.com', password_hash = 'abcdef', first_name = 'Bill', last_name = 'Smith', phone = '800-555-5555'
+        WHERE id = 2;`
+      const testUser = {        
+        "email": "bob@email.com",
+        "password_hash": "zyxwvu",
+        "first_name": "Bob",
+        "last_name": "Jones",
+        "phone": "(800) 555-2211"      
+      };
+
+      describe('Valid /users/:id', function() {
+
+        before('before 1st PUT test', async function() {
+          await db.query(resetSqlCommand);
+        });
+  
+        afterEach('afterEach PUT test ', async function() {
+          await db.query(resetSqlCommand);
+        });
+  
+        it('updates the correct user and returns it', async function() {
+          let initialUser;
+          let updatedUser;      
+          
+          const response = await request(app)
+            .get(`/users/${putUserId}`);
+          initialUser = response.body;          
+          updatedUser = Object.assign({}, testUser);
+          updatedUser.id = putUserId;
+          const response_1 = await request(app)
+            .put(`/users/${putUserId}`)
+            .send(updatedUser)
+            .expect(200);
+          expect(response_1.body).to.be.deep.equal(updatedUser);
+        });
+      });
+  
+      describe('Invalid PUT /users/:id', function() {
+  
+        it('called with a non-numeric ID returns a 404 error', function() {
+          return request(app)
+            .put('/users/ABC')
+            .send(testUser)
+            .expect(404);
+        });
+  
+        it('called with an non existing ID returns a 404 error', function() {
+          return request(app)
+            .put('/users/1234567890')
+            .send(testUser)
+            .expect(404);
+        });
+
+        it('PUT duplicate email value', function() {  
+          const putDuplicateEmail = 'adam@email.com';                  
+          const duplicateUser = Object.assign({}, testUser);
+          duplicateUser.email = putDuplicateEmail;
+          return request(app)
+            .put(`/users/${putUserId}`)
+            .send(duplicateUser)
+            .expect(404)
+        });
+
+        // all missing data paths tested in /POST section
+        // this test is to confirm PUT route returns correct value if missing data
+        it('PUT with missing data', function() {
+          const missingDataUser = Object.assign({}, testUser);
+          missingDataUser.first_name = null;
+          return request(app)
+            .put(`/users/${putUserId}`)
+            .send(missingDataUser)
+            .expect(404)
+        });
+      });
+  
     });
   
     describe('DELETE /users/:id', function() {

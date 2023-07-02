@@ -10,7 +10,8 @@ const cartCount = setupCarts.cartCount;
 
 const {
   cartsTableName,
-  cartsUserIdforeignKeyName
+  cartsUserIdForeignKeyName,
+  cartItemsTableName
 } = require('../myConsts');
 
 function testCarts(app) {
@@ -18,6 +19,13 @@ function testCarts(app) {
   describe('/carts routes', function() {
 
     describe('setup carts table', function() {
+
+      before('before setup carts, drop cart_items', async function() {
+        const doesExist = await dbTools.tableExists(cartItemsTableName); 
+        if (doesExist) {
+          await dbTools.dropTable(cartItemsTableName);
+        }
+      });
 
       it('DROP carts', async function() {
         await dbTools.dropTable(cartsTableName);
@@ -32,15 +40,14 @@ function testCarts(app) {
       });
       
       it('check for carts FOREIGN KEY', async function() {        
-        const doesExist = await dbTools.foreignKeyExists(cartsUserIdforeignKeyName);      
+        const doesExist = await dbTools.foreignKeyExists(cartsUserIdForeignKeyName);      
         expect(doesExist).to.be.true;
       });
 
       it('INSERT new carts', async function() {
         const numInserted = await setupCarts.insertAllCarts(); 
         expect(numInserted).to.equal(cartCount);
-      });      
-      
+      });            
     });
 
     describe('cannot DELETE users with a cart', function() {
@@ -107,15 +114,14 @@ function testCarts(app) {
         expect(doesExist).to.be.true;
       });
 
-      it('try to DELETE user that has a cart', async function() {
-        // const response = await request(app)
+      it('try to DELETE user that has a cart', async function() {        
         return await request(app)
           .delete(`/users/${testUserId}`)
           .expect(409);   // constraint error
       });
     });
 
-    describe('/GET carts', function() {
+    describe('GET /carts', function() {
 
       it('returns an array', async function() {
         const response = await request(app)
@@ -182,16 +188,78 @@ function testCarts(app) {
       });
     });
 
+    describe('POST /carts', function() {
+      const newCart = {
+        "created": new Date("05/29/2323"),
+        "modified": new Date("05/29/2323"),    
+        "user_id": 5
+      };
+      const invalidCart = {
+        "modified": new Date("05/29/2323"),    
+        "user_id": 5
+      };
+      const resetSqlCommand = `
+        DELETE FROM orders
+        WHERE user_id = 5;`
+
+      before('before first POST test', async function() {
+        await db.query(resetSqlCommand);
+      });
+
+      after('after last POST test', async function() {
+        await db.query(resetSqlCommand);
+      });
+  
+      it('post a new cart with valid data', async function() {
+        const response = await request(app)
+          .post('/carts')
+          .send(newCart)
+          .expect(201);
+        const postedCart = response.body;
+        // convert json date strings to dates
+        postedCart.created = new Date(postedCart.created);
+        postedCart.modified = new Date(postedCart.modified);
+        // now compare - use deepEqual for dates
+        assert.deepEqual(postedCart.created, newCart.created);
+        assert.deepEqual(postedCart.modified, newCart.modified);
+        assert.equal(postedCart.user_id, newCart.user_id);
+      });
+
+      it('did NOT post cart with a duplicate user_id', async function() {
+        return await request(app)
+          .post('/carts')
+          .send(newCart)
+          .expect(404);
+      });
+
+      it('did NOT post cart with no created', async function() {
+        return await request(app)
+          .post('/carts')
+          .send(invalidCart)
+          .expect(404);
+      });
+
+      it('did NOT post cart with no user_id', async function() {        
+        invalidCart.modified = invalidCart.created;
+        invalidCart.user_id = null;
+        return await request(app)
+          .post('/carts')
+          .send(invalidCart)
+          .expect(404);
+      });
+    });
+
     describe('PUT /carts/:id', function() {
       const putCartId = 2;      
       const resetSqlCommand = `
         UPDATE carts 
         SET created = '01/03/2023', modified = '01/04/2023'
         WHERE id = 2;`;
-      const testCart = {        
-        "created": new Date('05/25/23'),
-        "modified": new Date('05/26/23'),
-        "user_id": 3
+      // in testCart: make sure to set created to correct date in carts table
+      const testCart = {                
+        created: new Date('01/03/23'),
+        modified: new Date('05/26/23'),
+        user_id: 3
       };
   
       describe('Valid /carts/:id', function() {
@@ -229,11 +297,6 @@ function testCarts(app) {
       });
       
       describe('Invalid /carts/:id', function() {
-        const testCart = {
-          "created": new Date("05/29/2323"),
-          "modified": new Date("05/29/2323"),    
-          "user_id": 6
-        };
   
         it('called with a non-numeric ID returns a 404 error', function() {
           return request(app)
@@ -248,78 +311,29 @@ function testCarts(app) {
             .send(testCart)
             .expect(404)
         });        
+
+        it('did not PUT duplicate user-id value', function() {          
+          const putDuplicateUserId = 4;
+          const duplicateCart = Object.assign({}, testCart);
+          duplicateCart.user_id = putDuplicateUserId;
+          return request(app)
+            .put(`/carts/${putCartId}`)
+            .send(duplicateCart)
+            .expect(404)
+        });
+
+        // other tests for missing data performed in POST tests        
+        it('did not PUT with with no modified date', function() {
+          const missingDataCart = Object.assign({}, testCart);
+          missingDataCart.modified = null;
+          return request(app)
+            .put(`/carts/${putCartId}`)
+            .send(missingDataCart)
+            .expect(404)
+        });
       });
     });
     
-    describe('POST /carts', function() {
-      const newCart = {
-        "created": new Date("05/29/2323"),
-        "modified": new Date("05/29/2323"),    
-        "user_id": 5
-      };
-      const invalidCart = {
-        "modified": new Date("05/29/2323"),    
-        "user_id": 5
-      };
-
-      it('post a new cart with valid data', async function() {
-        const response = await request(app)
-          .post('/carts')
-          .send(newCart)
-          .expect(201);
-        const postedCart = response.body;
-        // convert json date strings to dates
-        postedCart.created = new Date(postedCart.created);
-        postedCart.modified = new Date(postedCart.modified);
-        // now compare - use deepEqual for dates
-        assert.deepEqual(postedCart.created, newCart.created);
-        assert.deepEqual(postedCart.modified, newCart.modified);
-        assert.equal(postedCart.user_id, newCart.user_id);
-      });
-
-      it('did NOT post cart with a duplicate user_id', async function() {
-        return await request(app)
-          .post('/carts')
-          .send(newCart)
-          .expect(404);
-      });
-
-      it('did NOT post user with no created', async function() {
-        return await request(app)
-          .post('/carts')
-          .send(invalidCart)
-          .expect(404);
-      });
-
-      it('did NOT post user with no modified', async function() {
-        invalidCart.created = invalidCart.modified;
-        invalidCart.modified = null;
-        return await request(app)
-          .post('/carts')
-          .send(invalidCart)
-          .expect(404);
-      });
-
-      it('did NOT post user with no user_id', async function() {        
-        invalidCart.modified = invalidCart.created;
-        invalidCart.user_id = null;
-        return await request(app)
-          .post('/carts')
-          .send(invalidCart)
-          .expect(404);
-      });
-
-      it('did NOT post user with no user_id', async function() {        
-        invalidCart.created = newCart.created;
-        invalidCart.modified.setDate(invalidCart.created.getDate() - 1);
-        invalidCart.user_id = newCart.id;
-        return await request(app)
-          .post('/carts')
-          .send(invalidCart)
-          .expect(404);
-      });
-    });
-
     describe('DELETE /carts/:id', function() {
       const testUserId = 6; // +1 from userId from POST test 
       const toDelCart = {
@@ -350,13 +364,13 @@ function testCarts(app) {
 
       describe('Invalid DELETE /carts/:id', function() {
 
-        it('called with a non-numeric user id', function() {
+        it('called with a non-numeric cart id', function() {
           return request(app)
             .delete('/carts/ABC')
             .expect(404);
         });
 
-        it('called with a product id that is not in database', function() {
+        it('called with a carts id that is not in database', function() {
           return request(app)
             .delete('/carts/1234567890')
             .expect(404);

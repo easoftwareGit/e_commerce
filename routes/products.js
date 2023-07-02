@@ -61,6 +61,50 @@ productsRouter.get('/:id', async (req, res) => {
   }
 });
 
+productsRouter.post('/', async (req, res) => {
+
+  // POST request
+  // path: localhost:3000/products/#
+  //  where # is the id number for the product
+  // body: JSON object
+  //  {
+  //    "name": "product",
+  //    "model_number": "xxx-xxx-xx",
+  //    "description": "This is a product",
+  //    "price": 12.34
+  //  }
+
+  const { name, model_number, description, price } = req.body;
+  const rowValues = [name, model_number, description, price];
+  const sqlCommand = `
+    INSERT INTO products (name, model_number, description, price) 
+    VALUES ($1, $2, $3, $4) RETURNING *`;
+  try {
+    const results = await db.query(sqlCommand, rowValues);
+    if (db.validResultsAtLeast1Row(results)) {      
+      res.status(201).json(results.rows[0]);      
+    } else {
+      res.status(404).json('Product not inserted');
+    }        
+  } catch (err) {    
+    if (err.code === '23505') {
+      let errMsg
+      if (err.detail.includes('(name)')) {
+        errMsg = 'name already used';
+      } else if (err.detail.includes('(model_number)')) {
+        errMsg = 'model_number already used'
+      } else {
+        errMsg = 'value already used'
+      }
+      res.status(404).json(errMsg);
+    } else if (err.code === '23502') {
+      res.status(404).json('required value missing');
+    } else {
+      throw Error(err);
+    }    
+  }
+});
+
 productsRouter.put('/:id', async (req, res) => {
 
   // PUT request
@@ -93,37 +137,6 @@ productsRouter.put('/:id', async (req, res) => {
       res.status(404).send(`Product not found`);
     };    
   } catch (err) {
-    throw Error(err);
-  }
-});
-
-productsRouter.post('/', async (req, res) => {
-
-  // POST request
-  // path: localhost:3000/products/#
-  //  where # is the id number for the product
-  // body: JSON object
-  //  {
-  //    "name": "product",
-  //    "model_number": "xxx-xxx-xx",
-  //    "description": "This is a product",
-  //    "price": 12.34
-  //  }
-
-  const { name, model_number, description, price } = req.body;
-  const rowValues = [name, model_number, description, price];
-  const sqlCommand = `
-    INSERT INTO products (name, model_number, description, price) 
-    VALUES ($1, $2, $3, $4) RETURNING *`;
-  try {
-    const results = await db.query(sqlCommand, rowValues);
-    if (db.validResultsAtLeast1Row(results)) {      
-      res.status(201).json(results.rows[0]);      
-    } else {
-      res.status(404).json('Product not inserted');
-    }        
-  } catch (err) {
-    // console.log(`err code = ${err.code}`);
     if (err.code === '23505') {
       let errMsg
       if (err.detail.includes('(name)')) {

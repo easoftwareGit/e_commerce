@@ -4,18 +4,13 @@ const {
   usersTableName, 
   productsTableName, 
   cartsTableName,
-  cartItemsTable
+  cartItemsTableName
 } = require('./myConsts');
-
-// const usersTableName = 'users';
-// const productsTableName = 'products';
-// const cartsTableName = 'carts';
-// const cartItemsTable = 'cart_items';
 
 async function dropAll(app) {
 
   try {
-    await dbTools.dropTable(cartItemsTable);
+    await dbTools.dropTable(cartItemsTableName);
     await dbTools.dropTable(cartsTableName);
     await dbTools.dropTable(productsTableName);
     await dbTools.dropTable(usersTableName);

@@ -68,15 +68,16 @@ cartsRouter.post('/', async (req, res) => {
   // body: JSON object
   //  {
   //    created: new Date("01/28/2023"),
-  //    modified: new Date("01/28/2023"),
+  //    modified: new Date("01/28/2023"), (not required, will be set = created)
   //    user_id: 1
   //  }
   
-  const { created, modified, user_id } = req.body;
-  const rowValues = [created, modified, user_id];
+  const { created, user_id } = req.body;
+  const rowValues = [created, created, user_id];
   const sqlCommand = `
     INSERT INTO carts (created, modified, user_id) 
-    VALUES ($1, $2, $3) RETURNING *`;
+    VALUES ($1, $2, $3) 
+    RETURNING *`;
   try {
     const results = await db.query(sqlCommand, rowValues);
     if (db.validResultsAtLeast1Row(results)) {      
@@ -103,20 +104,19 @@ cartsRouter.put('/:id', async (req, res) => {
   //  where # is the id number for the cart
   // body: JSON object
   //  {
-  //    created: new Date("01/28/2023"),
+  //    created: new Date("01/28/2023"), (not required, not used, cannot change created date)
   //    modified: new Date("01/28/2023"),
   //    user_id: 1
   //  }
   
   const id = parseInt(req.params.id); 
-  const { created, modified, user_id } = req.body;
-  const rowValues = [created, modified, user_id, id];
+  const { modified, user_id } = req.body;
+  const rowValues = [modified, user_id, id];
   const sqlCommand = `
     UPDATE carts
-    SET created = $1, 
-        modified = $2, 
-        user_id = $3
-    WHERE id = $4
+    SET modified = $1, 
+        user_id = $2
+    WHERE id = $3
     RETURNING *`;
   try {
     const results = await db.query(sqlCommand, rowValues);
@@ -126,7 +126,13 @@ cartsRouter.put('/:id', async (req, res) => {
       res.status(404).send(`Cart not found`);
     };
   } catch (err) {
-    throw Error(err);
+    if (err.code === '23505') {
+      res.status(404).json('user_id already used');
+    } else if (err.code === '23502') {
+      res.status(404).json('required value missing');
+    } else {
+      throw Error(err);
+    }    
   }
 });
 
@@ -329,6 +335,5 @@ cartsRouter.delete('/:id/allItems', async (req, res) => {
     }
   }
 });
-
 
 module.exports = cartsRouter;

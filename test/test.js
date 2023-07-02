@@ -3,17 +3,18 @@
 
 const app = require('../index');
 
-
 const dropAll = require('./preTest');
 const testUsers = require('./users/users');
 const testAuth = require('./auth/auth');
 const testProducts = require('./products/products');
 const testCarts = require('./carts/carts');
 const testCartItems = require('./carts/cartItems');
+const testOrders = require('./orders/orders');
 
 // dropAll(app);
 // testUsers(app);
 // testAuth(app);
 // testProducts(app);
 // testCarts(app);
-testCartItems(app);
+// testCartItems(app);
+testOrders(app);

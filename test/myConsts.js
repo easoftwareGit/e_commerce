@@ -11,7 +11,7 @@ const productsKeyColName = 'id';
 
 const cartsTableName = 'carts';
 const userIdfkColName = 'user_id';
-const cartsUserIdforeignKeyName = cartsTableName + '_' + userIdfkColName + '_fkey';
+const cartsUserIdForeignKeyName = cartsTableName + '_' + userIdfkColName + '_fkey';
 const cartsKeyColName = 'id';
 
 const cartItemsTableName = 'cart_items';
@@ -19,6 +19,11 @@ const cartIdFkColName = 'cart_id';
 const cartsForeignKeyName = cartItemsTableName + '_' + cartIdFkColName + '_fkey';
 const productsFkColName = 'product_id';
 const productsForeignKeyName = cartItemsTableName + '_' + productsFkColName + '_fkey';
+
+const ordersTableName = 'orders';
+const ordersUserIdForeignKeyName = ordersTableName + '_' + userIdfkColName + '_fkey';
+
+const orderItemsTableName = 'order_items';
 
 module.exports = {
   usersTableName,
@@ -32,10 +37,13 @@ module.exports = {
   productsKeyColName,
   cartsTableName,
   userIdfkColName,
-  cartsUserIdforeignKeyName,
+  cartsUserIdForeignKeyName,
   cartsKeyColName,
   cartItemsTableName,
   cartsForeignKeyName,
   productsFkColName,
-  productsForeignKeyName
+  productsForeignKeyName,
+  ordersTableName,
+  ordersUserIdForeignKeyName,
+  orderItemsTableName
 };

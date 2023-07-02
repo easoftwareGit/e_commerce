@@ -1,15 +1,5 @@
 const db = require('../../db/db');
 
-// const tableName = 'cart_items';
-// const cartsTableName = 'carts';
-// const cartIdFkColName = 'cart_id';
-// const cartsForeignKeyName = tableName + '_' + cartIdFkColName + '_fkey';
-// const cartsKeyColName = 'id';
-// const productsTableName = 'products';
-// const productsFkColName = 'product_id';
-// const productsForeignKeyName = tableName + '_' + productsFkColName + '_fkey';
-// const productsKeyColName = 'id';
-
 const { 
   cartItemsTableName,
   cartsTableName,

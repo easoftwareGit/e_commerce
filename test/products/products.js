@@ -14,7 +14,9 @@ const {
   nameColName, 
   products_name_index_name,
   modelNumberColName,
-  products_model_number_index_name
+  products_model_number_index_name,
+  cartItemsTableName,
+  orderItemsTableName
 } = require('../myConsts');
 
 function testProducts(app) {
@@ -22,6 +24,20 @@ function testProducts(app) {
   describe('/products routes', function() {
 
     describe('setup products table', function() {      
+
+      before('before setup products, drop cart_items', async function() {
+        const doesExist = await dbTools.tableExists(cartItemsTableName); 
+        if (doesExist) {
+          await dbTools.dropTable(cartItemsTableName);
+        }
+      });
+
+      before('before setup products, drop order_items', async function() {
+        const doesExist = await dbTools.tableExists(orderItemsTableName); 
+        if (doesExist) {
+          await dbTools.dropTable(orderItemsTableName);
+        }
+      });
 
       it("DROP products", async function() {
         await dbTools.dropTable(productsTableName);
@@ -122,70 +138,6 @@ function testProducts(app) {
       });
     });
 
-    describe('PUT /products/:id', function() {
-      const putProductId = 2;
-      const resetSqlCommand = `
-        UPDATE products 
-        SET name = 'Snow Shovel Deluxe', model_number = '100-101-01', description = 'Snow Shovel, Deluxe 24 inch', price = 19.99
-        WHERE id = 2;`
-      const testProduct = {        
-        "name": "Super Duper Snow Scooper",
-        "model_number": "100-111-01",
-        "description": "The best snow shovel you can buy",
-        "price": "999.99"        
-      };
-  
-      describe('Valid /products/:id', function() {
-
-        before('before 1st PUT test', function() {
-          db.query(resetSqlCommand);
-        });
-  
-        afterEach('afterEach PUT test ', function() {      
-          db.query(resetSqlCommand);
-        });
-
-        it('updates the correct product and returns it', async function() {
-          let initialProduct;
-          let updatedProduct;      
-
-          const response = await request(app)
-            .get(`/products/${putProductId}`);
-          initialProduct = response.body;          
-          updatedProduct = Object.assign({}, testProduct);
-          updatedProduct.id = putProductId;
-          const response_1 = await request(app)
-            .put(`/products/${putProductId}`)
-            .send(updatedProduct)
-            .expect(200);
-          expect(response_1.body).to.be.deep.equal(updatedProduct);
-        });
-      });
-
-      describe('Invalid PUT /products/:id', function() {
-        const testProduct = {
-          "name": "Child Shoveler",
-          "model_number": "100-301-01",
-          "description": "Child with chore to shovel snow",
-          "price": 99.99
-        };
-
-        it('called with a non-numeric ID returns a 404 error', async function() {
-          return await request(app)
-            .put('/products/ABC')
-            .send(testProduct)
-            .expect(404);
-        });
-
-        it('called with an invalid ID returns a 404 error', async function() {
-          return await request(app)
-            .put('/products/1234567890')
-            .send(testProduct)
-            .expect(404);
-        });
-      });
-    });
-
     describe('POST /products', function() {
 
       const newProduct = {
@@ -276,6 +228,93 @@ function testProducts(app) {
           .expect(404);
       });
       
+    });
+
+    describe('PUT /products/:id', function() {
+      const putProductId = 2;
+      const resetSqlCommand = `
+        UPDATE products 
+        SET name = 'Snow Shovel Deluxe', model_number = '100-101-01', description = 'Snow Shovel, Deluxe 24 inch', price = 19.99
+        WHERE id = 2;`
+      const testProduct = {        
+        "name": "Super Duper Snow Scooper",
+        "model_number": "100-111-01",
+        "description": "The best snow shovel you can buy",
+        "price": "999.99"        
+      };
+  
+      describe('Valid /products/:id', function() {
+
+        before('before 1st PUT test', function() {
+          db.query(resetSqlCommand);
+        });
+  
+        afterEach('afterEach PUT test ', function() {      
+          db.query(resetSqlCommand);
+        });
+
+        it('updates the correct product and returns it', async function() {
+          let initialProduct;
+          let updatedProduct;      
+
+          const response = await request(app)
+            .get(`/products/${putProductId}`);
+          initialProduct = response.body;          
+          updatedProduct = Object.assign({}, testProduct);
+          updatedProduct.id = putProductId;
+          const response_1 = await request(app)
+            .put(`/products/${putProductId}`)
+            .send(updatedProduct)
+            .expect(200);
+          expect(response_1.body).to.be.deep.equal(updatedProduct);
+        });
+      });
+
+      describe('Invalid PUT /products/:id', function() {
+        const testProduct = {
+          "name": "Child Shoveler",
+          "model_number": "100-301-01",
+          "description": "Child with chore to shovel snow",
+          "price": 99.99
+        };
+
+        it('called with a non-numeric ID returns a 404 error', async function() {
+          return await request(app)
+            .put('/products/ABC')
+            .send(testProduct)
+            .expect(404);
+        });
+
+        it('called with an invalid ID returns a 404 error', async function() {
+          return await request(app)
+            .put('/products/1234567890')
+            .send(testProduct)
+            .expect(404);
+        });
+
+        // all duplicate data paths tested in /POST section
+        // this test is to confirm PUT route returns correct value if missing data
+        it('PUT duplicate name value', function() {          
+          const putDuplicateName = 'Ice Scraper Windshield';
+          const duplicateProduct = Object.assign({}, testProduct);
+          duplicateProduct.name = putDuplicateName;
+          return request(app)
+            .put(`/products/${putProductId}`)
+            .send(duplicateProduct)
+            .expect(404)
+        });
+
+        // all missing data paths tested in /POST section
+        // this test is to confirm PUT route returns correct value if missing data
+        it('PUT with missing data', function() {
+          const missingDataProduct = Object.assign({}, testProduct);
+          missingDataProduct.name = null;
+          return request(app)
+            .put(`/products/${putProductId}`)
+            .send(missingDataProduct)
+            .expect(404)
+        });
+      });
     });
 
     describe('DELETE /products/:id', function() {

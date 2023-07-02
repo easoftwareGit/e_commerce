@@ -87,7 +87,6 @@ usersRouter.post('/', async (req, res) => {
       res.status(404).json('User not inserted');
     }    
   } catch (err) {
-    // console.log(`err code = ${err.code}`);
     if (err.code === '23505') {
       res.status(404).json('email already used');
     } else if (err.code === '23502') {
@@ -132,7 +131,13 @@ usersRouter.put('/:id', async (req, res) => {
       res.status(404).send(`User not found`);
     };
   } catch (err) {
-    throw Error(err);
+    if (err.code === '23505') {
+      res.status(404).json('email already used');
+    } else if (err.code === '23502') {
+      res.status(404).json('required value missing');
+    } else {
+      throw Error(err);
+    }    
   }
 });
 

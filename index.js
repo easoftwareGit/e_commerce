@@ -84,10 +84,12 @@ const usersRouter = require('./routes/users');
 const authRouter = require('./routes/auth');
 const productsRouter = require('./routes/products');
 const cartsRouter = require('./routes/carts');
+const ordersRouter = require('./routes/orders');
 app.use('/users', usersRouter);
 app.use('/auth', authRouter);
 app.use('/products', productsRouter);
 app.use('/carts', cartsRouter);
+app.use('/orders', ordersRouter);
 
 // usersRouter.stack.forEach(function(r){
 //   if (r.route && r.route.path) {
