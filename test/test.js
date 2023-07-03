@@ -10,6 +10,7 @@ const testProducts = require('./products/products');
 const testCarts = require('./carts/carts');
 const testCartItems = require('./carts/cartItems');
 const testOrders = require('./orders/orders');
+const testOrderItems = require('./orders/orderItems');
 
 // dropAll(app);
 // testUsers(app);
@@ -17,4 +18,5 @@ const testOrders = require('./orders/orders');
 // testProducts(app);
 // testCarts(app);
 // testCartItems(app);
-testOrders(app);
+// testOrders(app);
+testOrderItems(app);

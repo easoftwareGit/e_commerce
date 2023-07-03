@@ -10,7 +10,8 @@ const orderCount = setupOrders.orderCount;
 
 const {
   ordersTableName,
-  ordersUserIdForeignKeyName
+  ordersUserIdForeignKeyName,
+  orderItemsTableName
 } = require('../myConsts');
 
 function testOrders(app) {
@@ -18,6 +19,10 @@ function testOrders(app) {
   describe('/orders routes', function() {
 
     describe('setup orders table', function() {
+
+      before('before DROP orders, drop order_items table', async function() {
+        await dbTools.dropTable(orderItemsTableName);
+      });
 
       it('DROP orders', async function() {
         await dbTools.dropTable(ordersTableName);

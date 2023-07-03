@@ -8,19 +8,19 @@ const {
 
 const carts = [
   {
-    "created": new Date("01/02/2323"),
-    "modified": new Date("01/02/2323"),    
-    "user_id": 1
+    created: new Date("01/02/2323"),
+    modified: new Date("01/02/2323"),    
+    user_id: 1
   },
   {
-    "created": new Date("01/03/2023"),
-    "modified": new Date("01/04/2323"),    
-    "user_id": 3
+    created: new Date("01/03/2023"),
+    modified: new Date("01/04/2323"),    
+    user_id: 3
   },
   {
-    "created": new Date("01/05/2023"),
-    "modified": new Date("01/05/2323"),    
-    "user_id": 4
+    created: new Date("01/05/2023"),
+    modified: new Date("01/05/2323"),    
+    user_id: 4
   }
 ];
 

@@ -10,29 +10,29 @@ const {
 
 const items = [
   {
-    "cart_id": 1,
-    "product_id": 3,
-    "quantity": 1
+    cart_id: 1,
+    product_id: 3,
+    quantity: 1
   },
   {
-    "cart_id": 1,
-    "product_id": 4,
-    "quantity": 2
+    cart_id: 1,
+    product_id: 4,
+    quantity: 2
   },
   {
-    "cart_id": 2,
-    "product_id": 1,
-    "quantity": 2
+    cart_id: 2,
+    product_id: 1,
+    quantity: 2
   },
   {
-    "cart_id": 3,
-    "product_id": 3,
-    "quantity": 1
+    cart_id: 3,
+    product_id: 3,
+    quantity: 1
   },
   {
-    "cart_id": 3,
-    "product_id": 4,
-    "quantity": 1
+    cart_id: 3,
+    product_id: 4,
+    quantity: 1
   }
 ];
 

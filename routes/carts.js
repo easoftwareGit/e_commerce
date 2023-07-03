@@ -160,6 +160,12 @@ cartsRouter.delete('/:id', async (req, res) => {
   }
 });
 
+/**
+ * checks id param,sets req.itemId if id param valid, else sets error
+ * @param {String} - 'id'; matches the route handler path variable (:itemId)
+ * @param {string} - id - actual value of id parameter in route path
+ */
+
 cartsRouter.param('itemId',  (req, res, next, id) => {
   try {
     const itemId = parseInt(id);    
@@ -244,8 +250,7 @@ cartsRouter.post('/:id/items', async (req, res) => {
     } else {
       res.status(404).json('Cart item not inserted');
     }    
-  } catch (err) {
-    // console.log(`err code = ${err.code}`);
+  } catch (err) {    
     if (err.code === '23502') {
       res.status(404).json('required value missing');
     } else if (err.code === '23503') {
@@ -284,7 +289,13 @@ cartsRouter.put('/:id/items/:itemId', async (req, res) => {
       res.status(404).send(`Cart item not found`);
     };
   } catch (err) {
-    throw Error(err);
+    if (err.code === '23502') {
+      res.status(404).json('required value missing');
+    } else if (err.code === '23503') {
+      res.status(404).json('product not valid');
+    } else {
+      throw Error(err);
+    }    
   }
 });
 

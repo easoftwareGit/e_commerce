@@ -8,18 +8,18 @@ const {
 
 const orders = [
   {
-    "created": new Date("01/02/2023"),
-    "modified": new Date("01/02/2023"),        
-    "status": 'Created',
-    "total_price": 13.98,
-    "user_id": 3
+    created: new Date("01/02/2023"),
+    modified: new Date("01/02/2023"),        
+    status: 'Created',
+    total_price: 13.98,
+    user_id: 3
   },
   {
-    "created": new Date("02/02/2023"),
-    "modified": new Date("02/02/2023"),    
-    "status": 'Created',
-    "total_price": 57.97,
-    "user_id": 4
+    created: new Date("02/02/2023"),
+    modified: new Date("02/02/2023"),    
+    status: 'Created',
+    total_price: 57.97,
+    user_id: 4
   }
 ];
 

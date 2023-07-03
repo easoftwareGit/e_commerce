@@ -7,46 +7,46 @@ const {
 
 const users = [
   {  
-    'email': 'adam@email.com',
-    'password_hash': '123ABC',
-    'first_name': 'Adam',
-    'last_name': 'Smith',
-    'phone': '800 555-1212'
+    email: 'adam@email.com',
+    password_hash: '123ABC',
+    first_name: 'Adam',
+    last_name: 'Smith',
+    phone: '800 555-1212'
   },
   {      
-    'email': 'bill@gmail.com',
-    'password_hash': 'abcdef',
-    'first_name': 'Bill',
-    'last_name': 'Black',
-    'phone': '800 555-5555'
+    email: 'bill@gmail.com',
+    password_hash: 'abcdef',
+    first_name: 'Bill',
+    last_name: 'Black',
+    phone: '800 555-5555'
   },
   {
-    'email': 'chad@email.com',
-    'password_hash': 'HASHME',
-    'first_name': 'Chad',
-    'last_name': 'White',
-    'phone': '800 555-7890'
+    email: 'chad@email.com',
+    password_hash: 'HASHME',
+    first_name: 'Chad',
+    last_name: 'White',
+    phone: '800 555-7890'
   },
   {
-    'email': 'doug@email.com',
-    'password_hash': 'QWERTY',
-    'first_name': 'Doug',
-    'last_name': 'Jones',
-    'phone': '800 555-2211'
+    email: 'doug@email.com',
+    password_hash: 'QWERTY',
+    first_name: 'Doug',
+    last_name: 'Jones',
+    phone: '800 555-2211'
   },
   {
-    'email': 'eric@email.com',
-    'password_hash': 'NOHASH',
-    'first_name': 'Eric',
-    'last_name': 'Johnson',
-    'phone': '800 555-1234'
+    email: 'eric@email.com',
+    password_hash: 'NOHASH',
+    first_name: 'Eric',
+    last_name: 'Johnson',
+    phone: '800 555-1234'
   },
   {        
-    "email": "fred@email.com",
-    "password_hash": "123456",
-    "first_name": "Fred",
-    "last_name": "Green",
-    "phone": "800 555-4321"
+    email: "fred@email.com",
+    password_hash: "123456",
+    first_name: "Fred",
+    last_name: "Green",
+    phone: "800 555-4321"
   }
 ];
 

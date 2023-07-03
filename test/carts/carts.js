@@ -199,7 +199,7 @@ function testCarts(app) {
         "user_id": 5
       };
       const resetSqlCommand = `
-        DELETE FROM orders
+        DELETE FROM carts
         WHERE user_id = 5;`
 
       before('before first POST test', async function() {
@@ -312,21 +312,21 @@ function testCarts(app) {
             .expect(404)
         });        
 
-        it('did not PUT duplicate user-id value', function() {          
+        it('did not PUT duplicate user-id value', async function() {          
           const putDuplicateUserId = 4;
           const duplicateCart = Object.assign({}, testCart);
           duplicateCart.user_id = putDuplicateUserId;
-          return request(app)
+          return await request(app)
             .put(`/carts/${putCartId}`)
             .send(duplicateCart)
             .expect(404)
         });
 
         // other tests for missing data performed in POST tests        
-        it('did not PUT with with no modified date', function() {
+        it('did not PUT with with no modified date', async function() {
           const missingDataCart = Object.assign({}, testCart);
           missingDataCart.modified = null;
-          return request(app)
+          return await request(app)
             .put(`/carts/${putCartId}`)
             .send(missingDataCart)
             .expect(404)
@@ -379,7 +379,6 @@ function testCarts(app) {
     });
 
   });
-
 };
 
 module.exports = testCarts;

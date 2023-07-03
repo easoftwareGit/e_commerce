@@ -12,7 +12,9 @@ const {
   usersTableName, 
   user_email_index_name,
   cartsTableName,
-  ordersTableName 
+  ordersTableName, 
+  cartItemsTableName,
+  orderItemsTableName
 } = require('../myConsts');
 
 function testUsers(app) {
@@ -21,10 +23,30 @@ function testUsers(app) {
   
     describe('setup users table', function() {
   
-      before('before setup users, DROP orders', async function() {
+      before('before setup users, DROP cart_items', async function() {
+        const doesExist = await dbTools.tableExists(cartItemsTableName); 
+        if (doesExist) {
+          await dbTools.dropTable(cartItemsTableName);
+        }
+      });
+
+      before('before setup users, DROP carts', async function() {
         const doesExist = await dbTools.tableExists(cartsTableName); 
         if (doesExist) {
           await dbTools.dropTable(cartsTableName);
+        }
+      });
+
+      before('before setup users, DROP order_items', async function() {
+        const doesExist = await dbTools.tableExists(orderItemsTableName); 
+        if (doesExist) {
+          await dbTools.dropTable(orderItemsTableName);
+        }
+      });
+      before('before setup users, DROP orders', async function() {
+        const doesExist = await dbTools.tableExists(ordersTableName); 
+        if (doesExist) {
+          await dbTools.dropTable(ordersTableName);
         }
       });
 
