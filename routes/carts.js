@@ -1,6 +1,8 @@
 const express = require('express');
 const cartsRouter = express.Router();
 const db = require('../db/db');
+const cartQueries = require('../db/cartQueries');
+const orderQueries = require('../db/orderQueries');
 
 /**
  * checks id param,sets req.cartId if id param valid, else sets error
@@ -48,14 +50,13 @@ cartsRouter.get('/:id', async (req, res) => {
   //  where # is the id number for the cart
   // body: not used
 
-  const sqlCommand = `SELECT * FROM carts WHERE id = $1`;
   try {
-    const results = await db.query(sqlCommand, [req.cartId]); 
-    if (db.validResultsAtLeast1Row(results)) {      
-      res.status(200).json(results.rows[0]);
-    } else {        
-      res.status(404).json('Cart not found');
-    }    
+    const results = await cartQueries.getCart(req.cartId);
+    if (results.status === 200) {
+      res.status(200).json(results.cart);
+    } else {
+      res.status(results.status).json(results.message);
+    }
   } catch (err) {
     throw Error(err);
   }
@@ -85,15 +86,40 @@ cartsRouter.post('/', async (req, res) => {
     } else {
       res.status(404).json('Cart not inserted');
     }    
-  } catch (err) {
-    // console.log(`err code = ${err.code}`);
+  } catch (err) {    
     if (err.code === '23505') {
-      res.status(404).json('user_id already used');
+      res.status(400).json('user_id already used');
     } else if (err.code === '23502') {
-      res.status(404).json('required value missing');
+      res.status(400).json('required value missing');
     } else {
       throw Error(err);
     }    
+  }
+});
+
+cartsRouter.post('/:id/checkout', async (req, res) => {
+
+  // POST request
+  // path: localhost:3000/carts/#/checkout
+  //  where # is the id number for the cart
+  // body: JSON object
+  //  {
+  //    id: 1
+  //    created: new Date("01/28/2023"),
+  //    modified: new Date("01/28/2023"), (not required, will be set = created)
+  //    user_id: 1
+  //  }
+
+  try {    
+    const cart = req.body;
+    const results = await orderQueries.moveCartToOrder(cart);
+    if (results.status === 201) {
+      res.status(201).json(results.order);
+    } else {
+      res.status(results.status).json(results.message);
+    }    
+  } catch (err) {
+    throw Error(err);
   }
 });
 
@@ -127,9 +153,9 @@ cartsRouter.put('/:id', async (req, res) => {
     };
   } catch (err) {
     if (err.code === '23505') {
-      res.status(404).json('user_id already used');
+      res.status(400).json('user_id already used');
     } else if (err.code === '23502') {
-      res.status(404).json('required value missing');
+      res.status(400).json('required value missing');
     } else {
       throw Error(err);
     }    
@@ -187,20 +213,13 @@ cartsRouter.get('/:id/items', async (req, res) => {
   //  where # is the id number for the cart
   // body: not used
 
-  const sqlCommand = `
-    SELECT cart_items.id, cart_id, product_id, quantity, 
-	         products.name, products.model_number, products.description,
-	         products.price, (quantity * products.price) AS item_total
-    FROM cart_items
-    INNER JOIN products ON (products.id = cart_items.product_id)
-    WHERE cart_id = $1;`;
   try {
-    const results = await db.query(sqlCommand, [req.cartId]); 
-    if (db.validResultsAtLeast1Row(results)) {      
-      res.status(200).json(results.rows);
-    } else {        
+    const results = await cartQueries.getAllItemsForCart(req.cartId);
+    if (results) {
+      res.status(200).json(results);
+    } else {
       res.status(404).json('Cart items not found');
-    }    
+    }
   } catch (err) {
     throw Error(err);
   }
@@ -252,9 +271,9 @@ cartsRouter.post('/:id/items', async (req, res) => {
     }    
   } catch (err) {    
     if (err.code === '23502') {
-      res.status(404).json('required value missing');
+      res.status(400).json('required value missing');
     } else if (err.code === '23503') {
-      res.status(404).json('product not valid');
+      res.status(400).json('product not valid');
     } else {
       throw Error(err);
     }    
@@ -290,9 +309,9 @@ cartsRouter.put('/:id/items/:itemId', async (req, res) => {
     };
   } catch (err) {
     if (err.code === '23502') {
-      res.status(404).json('required value missing');
+      res.status(400).json('required value missing');
     } else if (err.code === '23503') {
-      res.status(404).json('product not valid');
+      res.status(400).json('product not valid');
     } else {
       throw Error(err);
     }    

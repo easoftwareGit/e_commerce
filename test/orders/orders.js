@@ -215,7 +215,7 @@ function testOrders(app) {
         return await request(app)
           .post('/orders')
           .send(invalidOrder)
-          .expect(404);
+          .expect(400);
       });
 
       it('did NOT post order with no total_price', async function() {
@@ -224,7 +224,7 @@ function testOrders(app) {
         return await request(app)
           .post('/orders')
           .send(invalidOrder)
-          .expect(404);
+          .expect(400);
       });
 
       it('did NOT post order with no user_id', async function() {
@@ -233,7 +233,7 @@ function testOrders(app) {
         return await request(app)
           .post('/orders')
           .send(invalidOrder)
-          .expect(404);
+          .expect(400);
       });
     });
 
@@ -313,7 +313,7 @@ function testOrders(app) {
           return request(app)
             .put(`/orders/${putOrderId}`)
             .send(missingDataOrder)
-            .expect(404)
+            .expect(400)
         });
 
         it('PUT with with no status', function() {
@@ -322,7 +322,7 @@ function testOrders(app) {
           return request(app)
             .put(`/orders/${putOrderId}`)
             .send(missingDataOrder)
-            .expect(404)
+            .expect(400)
         });
       });
     });

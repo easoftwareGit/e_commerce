@@ -229,14 +229,14 @@ function testCarts(app) {
         return await request(app)
           .post('/carts')
           .send(newCart)
-          .expect(404);
+          .expect(400);
       });
 
       it('did NOT post cart with no created', async function() {
         return await request(app)
           .post('/carts')
           .send(invalidCart)
-          .expect(404);
+          .expect(400);
       });
 
       it('did NOT post cart with no user_id', async function() {        
@@ -245,7 +245,7 @@ function testCarts(app) {
         return await request(app)
           .post('/carts')
           .send(invalidCart)
-          .expect(404);
+          .expect(400);
       });
     });
 
@@ -319,7 +319,7 @@ function testCarts(app) {
           return await request(app)
             .put(`/carts/${putCartId}`)
             .send(duplicateCart)
-            .expect(404)
+            .expect(400)
         });
 
         // other tests for missing data performed in POST tests        
@@ -329,7 +329,7 @@ function testCarts(app) {
           return await request(app)
             .put(`/carts/${putCartId}`)
             .send(missingDataCart)
-            .expect(404)
+            .expect(400)
         });
       });
     });

@@ -88,9 +88,9 @@ usersRouter.post('/', async (req, res) => {
     }    
   } catch (err) {
     if (err.code === '23505') {
-      res.status(404).json('email already used');
+      res.status(400).json('email already used');
     } else if (err.code === '23502') {
-      res.status(404).json('required value missing');
+      res.status(400).json('required value missing');
     } else {
       throw Error(err);
     }    
@@ -132,9 +132,9 @@ usersRouter.put('/:id', async (req, res) => {
     };
   } catch (err) {
     if (err.code === '23505') {
-      res.status(404).json('email already used');
+      res.status(400).json('email already used');
     } else if (err.code === '23502') {
-      res.status(404).json('required value missing');
+      res.status(400).json('required value missing');
     } else {
       throw Error(err);
     }    

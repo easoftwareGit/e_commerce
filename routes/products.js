@@ -96,9 +96,9 @@ productsRouter.post('/', async (req, res) => {
       } else {
         errMsg = 'value already used'
       }
-      res.status(404).json(errMsg);
+      res.status(400).json(errMsg);
     } else if (err.code === '23502') {
-      res.status(404).json('required value missing');
+      res.status(400).json('required value missing');
     } else {
       throw Error(err);
     }    
@@ -148,7 +148,7 @@ productsRouter.put('/:id', async (req, res) => {
       }
       res.status(404).json(errMsg);
     } else if (err.code === '23502') {
-      res.status(404).json('required value missing');
+      res.status(400).json('required value missing');
     } else {
       throw Error(err);
     }    

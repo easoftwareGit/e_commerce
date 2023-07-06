@@ -6,7 +6,7 @@ const pool = new Pool(config);
 /**
  * checks if the results object has valid parameter values
  *
- * @param {Object} - results 
+ * @param {Object} - results from a query
  * @return {Boolean} - true: results object valid and rows array has atleast 1 row; 
  *                   - false: results object invalid or rows array length < 1
  */

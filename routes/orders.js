@@ -1,6 +1,7 @@
 const express = require('express');
 const ordersRouter = express.Router();
 const db = require('../db/db');
+const orderQueries = require('../db/orderQueries');
 
 /**
  * checks id param,sets req.orderId if id param valid, else sets error
@@ -59,25 +60,15 @@ ordersRouter.post('/', async (req, res) => {
   //    on a post, modified = created
   //    status = 'Created'
   
-  const { created, total_price, user_id } = req.body;
-  const rowValues = [created, created, 'Created', total_price, user_id];
-  const sqlCommand = `
-    INSERT INTO orders(created, modified, status, total_price, user_id) 
-    VALUES ($1, $2, $3, $4, $5) 
-    RETURNING *`;
   try {
-    const results = await db.query(sqlCommand, rowValues);
-    if (db.validResultsAtLeast1Row(results)) {      
-      res.status(201).json(results.rows[0]);      
+    const results = await orderQueries.createNewOrder(req.body);
+    if (results.status === 201) {
+      res.status(201).json(results.order);
     } else {
-      res.status(404).json('Order not inserted');
-    }    
-  } catch (err) {    
-    if (err.code === '23502') {
-      res.status(404).json('required value missing');
-    } else {
-      throw Error(err);
-    }    
+      res.status(results.status).json(results.message);
+    }
+  } catch (err) {
+    throw Error(err)
   }
 });
 
@@ -116,7 +107,7 @@ ordersRouter.put('/:id', async (req, res) => {
     };
   } catch (err) {
     if (err.code === '23502') {
-      res.status(404).json('required value missing');
+      res.status(400).json('required value missing');
     } else {
       throw Error(err);
     }    
@@ -224,29 +215,20 @@ ordersRouter.post('/:id/items', async (req, res) => {
   //    quantity: 2
   //    price_unit: 12.34
   //  }
-  
-  const orderId = parseInt(req.params.id); 
-  const { product_id, quantity, price_unit } = req.body;
-  const rowValues = [orderId, product_id, quantity, price_unit];
-  const sqlCommand = `
-    INSERT INTO order_items (order_id, product_id, quantity, price_unit) 
-    VALUES ($1, $2, $3, $4) RETURNING *`;
+    
+  const orderId = parseInt(req.params.id);   
+  const orderItem = req.body;
+  orderItem.order_id = orderId;
   try {
-    const results = await db.query(sqlCommand, rowValues);
-    if (db.validResultsAtLeast1Row(results)) {      
-      res.status(201).json(results.rows[0]);      
+    const results = await orderQueries.createOrderItem(orderItem);
+    if (results.status === 201) {
+      res.status(201).json(results.orderItem);
     } else {
-      res.status(404).json('Order item not inserted');
-    }    
-  } catch (err) {    
-    if (err.code === '23502') {
-      res.status(404).json('required value missing');
-    } else if (err.code === '23503') {
-      res.status(404).json('product not valid');
-    } else {
-      throw Error(err);
-    }    
-  }
+      res.status(results.status).json(results.message);
+    }
+  } catch (err) {
+    throw Error(err);
+  }  
 });
 
 ordersRouter.put('/:id/items/:itemId', async (req, res) => {
@@ -280,9 +262,9 @@ ordersRouter.put('/:id/items/:itemId', async (req, res) => {
     };
   } catch (err) {
     if (err.code === '23502') {
-      res.status(404).json('required value missing');
+      res.status(400).json('required value missing');
     } else if (err.code === '23503') {
-      res.status(404).json('product not valid');
+      res.status(400).json('product not valid');
     } else {
       throw Error(err);
     }    

@@ -180,7 +180,7 @@ function testProducts(app) {
         return await request(app)
           .post('/products')
           .send(invalidProduct)
-          .expect(404);
+          .expect(400);
       });
 
       it('did NOT post product with a duplicate model_number', async function() {
@@ -189,7 +189,7 @@ function testProducts(app) {
         return await request(app)
           .post('/products')
           .send(invalidProduct)
-          .expect(404);
+          .expect(400);
       });
 
       it('did NOT post product with no name', async function() {
@@ -198,7 +198,7 @@ function testProducts(app) {
         return await request(app)
           .post('/products')
           .send(invalidProduct)
-          .expect(404);
+          .expect(400);
       });
 
       it('did NOT post product with no model_number', async function() {
@@ -207,7 +207,7 @@ function testProducts(app) {
         return await request(app)
           .post('/products')
           .send(invalidProduct)
-          .expect(404);
+          .expect(400);
       });
 
       it('did NOT post product with no description', async function() {
@@ -216,7 +216,7 @@ function testProducts(app) {
         return await request(app)
           .post('/products')
           .send(invalidProduct)
-          .expect(404);
+          .expect(400);
       });
 
       it('did NOT post product with no description', async function() {
@@ -225,7 +225,7 @@ function testProducts(app) {
         return await request(app)
           .post('/products')
           .send(invalidProduct)
-          .expect(404);
+          .expect(400);
       });
       
     });
@@ -312,7 +312,7 @@ function testProducts(app) {
           return request(app)
             .put(`/products/${putProductId}`)
             .send(missingDataProduct)
-            .expect(404)
+            .expect(400)
         });
       });
     });

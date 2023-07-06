@@ -193,14 +193,14 @@ function testUsers(app) {
         return await request(app)
           .post('/users')
           .send(newUser)
-          .expect(404);
+          .expect(400);
       });
   
       it('did NOT post user with no email', async function() {
         return await request(app)
           .post('/users')
           .send(invalidUser)
-          .expect(404);
+          .expect(400);
       });
   
       // it('did NOT post user with blank email', async function() {
@@ -217,7 +217,7 @@ function testUsers(app) {
         return await request(app)
           .post('/users')
           .send(invalidUser)
-          .expect(404);
+          .expect(400);
       });
   
       it('did NOT post user with blank first_name', async function() {
@@ -226,7 +226,7 @@ function testUsers(app) {
         return await request(app)
           .post('/users')
           .send(invalidUser)
-          .expect(404);
+          .expect(400);
       });
       
       it('did NOT post user with blank last_name', async function() {      
@@ -235,7 +235,7 @@ function testUsers(app) {
         return await request(app)
           .post('/users')
           .send(invalidUser)
-          .expect(404);
+          .expect(400);
       });
   
       it('did NOT post user with blank phone', async function() {            
@@ -244,7 +244,7 @@ function testUsers(app) {
         return await request(app)
           .post('/users')
           .send(invalidUser)
-          .expect(404);
+          .expect(400);
       });
     });
   
@@ -312,7 +312,7 @@ function testUsers(app) {
           return request(app)
             .put(`/users/${putUserId}`)
             .send(duplicateUser)
-            .expect(404)
+            .expect(400)
         });
 
         // all missing data paths tested in /POST section
@@ -323,7 +323,7 @@ function testUsers(app) {
           return request(app)
             .put(`/users/${putUserId}`)
             .send(missingDataUser)
-            .expect(404)
+            .expect(400)
         });
       });
   

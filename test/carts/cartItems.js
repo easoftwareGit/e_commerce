@@ -1,6 +1,7 @@
 const expect = require('chai').expect;
 const request = require('supertest');
 const db = require('../../db/db');
+const cartQuieries = require('../../db/cartQueries');
 
 const dbTools = require('../../db/dbTools');
 const { assert } = require('chai');
@@ -214,7 +215,7 @@ function testCartItems(app) {
     });
   });
 
-  describe('POST /carts/:id/items/:itemsId', function() {
+  describe('POST /carts/:id/items', function() {
     const cartId = 1;
     const nonExistantId = 1234;
     const postProductId = 2
@@ -254,14 +255,14 @@ function testCartItems(app) {
       return await request(app)
         .post(`/carts/${nonExistantId}/items`)
         .send(invalidItem)
-        .expect(404);
+        .expect(400);
     });
 
     it('did NOT post cart item with a non-existant product_id', async function() {      
       return await request(app)
         .post(`/carts/${cartId}/items`)
         .send(invalidItem)
-        .expect(404);
+        .expect(400);
     });
 
     it('did NOT post cart item with no product_id', async function() {      
@@ -269,7 +270,7 @@ function testCartItems(app) {
       return await request(app)
         .post(`/carts/${cartId}/items`)
         .send(invalidItem)
-        .expect(404);
+        .expect(400);
     });
 
     it('did NOT post cart item with no quantity', async function() {      
@@ -278,7 +279,7 @@ function testCartItems(app) {
       return await request(app)
         .post(`/carts/${cartId}/items`)
         .send(invalidItem)
-        .expect(404);
+        .expect(400);
     });
 
   });
@@ -352,7 +353,7 @@ function testCartItems(app) {
         return await request(app)
           .put(`/carts/${putCartId}`)
           .send(invalidItem)
-          .expect(404)
+          .expect(400)
       });
 
       // other tests for missing data performed in POST tests 
@@ -362,7 +363,7 @@ function testCartItems(app) {
         return await request(app)
           .put(`/carts/${putCartId}`)
           .send(invalidItem)
-          .expect(404)
+          .expect(400)
       });
     });
   });
@@ -499,6 +500,7 @@ function testCartItems(app) {
       });        
     });
   });
+
 };
 
 module.exports = testCartItems;
