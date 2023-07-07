@@ -143,10 +143,22 @@ function testOrderItems(app) {
         }
 
       });
-    })
+    });
 
     describe('cannot DELETE order with order_items', function() {
       let testOrderId;    
+      const testUserId = 2;
+      const testQuantity = 5;
+      const resetOrderItemsSqlCommand = `DELETE FROM order_items WHERE quantity = ${testQuantity};`;
+      const resetOrdersSqlCommand = `DELETE FROM orders WHERE user_id = ${testUserId}`;
+
+      before('before delete test order items, reset order items from prior tests', async function() {        
+        await db.query(resetOrderItemsSqlCommand);
+      });
+
+      before('before delete test order, reset orders from prior tests', async function() {        
+        await db.query(resetOrdersSqlCommand);
+      });
 
       before('insert test order', async function() {
         const order = {
@@ -154,7 +166,7 @@ function testOrderItems(app) {
           modified: new Date("03/13/2023"),    
           status: 'Created',
           total_price: 39.97,
-          user_id: 5
+          user_id: testUserId
         };
         const sqlCommand = `
           INSERT INTO orders (created, modified, status, total_price, user_id) 
@@ -172,13 +184,13 @@ function testOrderItems(app) {
           {
             order_id: testOrderId,
             product_id: 1,
-            quantity: 2,
+            quantity: testQuantity,
             price_unit: 19.98
           },
           {
             order_id: testOrderId,
             product_id: 2,
-            quantity: 1,
+            quantity: testQuantity,
             price_unit: 19.99
           }
         ];  
@@ -194,14 +206,12 @@ function testOrderItems(app) {
         }
       });
 
-      after('delete test order items', async function() {
-        const sqlCommand = `DELETE FROM order_items WHERE order_id = ${testOrderId}`;
-        await db.query(sqlCommand);
+      after('delete test order items', async function() {        
+        await db.query(resetOrderItemsSqlCommand);
       });
 
-      after('delete test order', async function() {
-        const sqlCommand = `DELETE FROM orders WHERE id = ${testOrderId}`;
-        await db.query(sqlCommand);
+      after('delete test order', async function() {        
+        await db.query(resetOrdersSqlCommand);
       });
 
       it('test order exists before DELETE order', async function() {

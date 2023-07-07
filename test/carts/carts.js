@@ -335,20 +335,33 @@ function testCarts(app) {
     });
     
     describe('DELETE /carts/:id', function() {
-      const testUserId = 6; // +1 from userId from POST test 
+      const testUserId = 2; 
       const toDelCart = {
         "created": new Date("06/26/2323"),
         "modified": new Date("06/26/2323"),    
         "user_id": testUserId
       };
+      const resetSqlCommand = `DELETE FROM carts WHERE user_id = ${testUserId};`;
       let delCartId;
+      
+      before('before DELETE tests, reset from prior tests', async function() {
+        await db.query(resetSqlCommand);
+      })
 
       before('before DELETE tests', async function() {
-        const response = await request(app)
-          .post('/carts')
-          .send(toDelCart);
-        const postedCart = response.body;
+        const sqlCommand =  `
+          INSERT INTO carts (created, modified, user_id) 
+          VALUES ($1, $2, $3) 
+          RETURNING *`;
+        const { created, modified, user_id } = toDelCart
+        const rowValues = [created, modified, user_id];
+        const response = await db.query(sqlCommand, rowValues);
+        const postedCart = response.rows[0];
         delCartId = postedCart.id;
+      });
+
+      after('after DELETE tests', async function() {
+        await db.query(resetSqlCommand);
       });
 
       describe('Valid DELETE /carts/:id', function() {

@@ -151,7 +151,7 @@ function testUsers(app) {
     });
   
     describe('POST /users', function() {
-        const newUser = {        
+      const newUser = {        
         "email": "greg@email.com",
         "password_hash": "098765",
         "first_name": "Greg",
@@ -330,7 +330,6 @@ function testUsers(app) {
     });
   
     describe('DELETE /users/:id', function() {
-
       const toDelUser = {
         "email": "greg@email.com",
         "password_hash": "098765",
@@ -341,10 +340,13 @@ function testUsers(app) {
       let delUserId;
   
       before('before DELETE tests', async function() {
-        const response = await request(app)
-          .post('/users')
-          .send(toDelUser);
-        const postedUser = response.body;
+        const { email, password_hash, first_name, last_name, phone } = toDelUser
+        const rowValues = [email, password_hash, first_name, last_name, phone];
+        const sqlCommand = `
+          INSERT INTO users (email, password_hash, first_name, last_name, phone) 
+          VALUES ($1, $2, $3, $4, $5) RETURNING *`;
+        const response = await db.query(sqlCommand, rowValues);
+        const postedUser = response.rows[0];
         delUserId = postedUser.id;
       });
 

@@ -1,6 +1,5 @@
 const db = require('./db');
 const cartQueries = require('./cartQueries');
-const { cartCount } = require('../test/carts/setupCarts');
 
 /**
  * creates a new order
@@ -170,6 +169,7 @@ async function insertOrdersItemsFromCartItems(orderId, cartId) {
 
 /**
  * moves a cart into orders
+ * note: this function assumes there are cart items
  *  1) get total price for cart
  *  2) creates a new order row from cart
  *  3) inserts cart items into order items linked to new order
@@ -182,7 +182,7 @@ async function insertOrdersItemsFromCartItems(orderId, cartId) {
 async function moveCartToOrder(cart) {
 
   try {
-    const totalPrice = await cartQueries.getCartTotalPrice(cart.id);
+    const totalPrice = await cartQueries.getCartTotalPrice(cart.id);    
     if (totalPrice) {
       // create new order from cart
       const newOrder = await insertOrderFromCart(cart, totalPrice)
@@ -195,8 +195,8 @@ async function moveCartToOrder(cart) {
           const movedItemCount = await cartQueries.deleteCartItems(cart.id);
           if (movedItemCount === insertedItemCount) {
             // delete cart
-            const removedCartCount = await cartQueries.deleteCart(cart.id)
-            if (removedCartCount === 1) {
+            const deleteResults = await cartQueries.deleteCart(cart.id);            
+            if (deleteResults.rowCount === 1) {
               return {
                 status: 201,
                 order: newOrder

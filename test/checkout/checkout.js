@@ -121,8 +121,9 @@ function testCheckout(app) {
       });
 
       it('remove row from carts', async function() {
-        const results = await cartQueries.deleteCart(testCart.id);        
-        assert.equal(results, 1)
+        const results = await cartQueries.deleteCart(testCart.id); 
+        assert.equal(results.status, 200);
+        assert.equal(results.rowCount, 1);
       });
     });
 

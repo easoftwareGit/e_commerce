@@ -85,7 +85,7 @@ async function getCartTotalPrice(cartId) {
  * deletes one cart row
  *
  * @param {Integer} cartId - id of cart to delete
- * @return {Integer|null} Integer = # of rows deleted; null = error deleteing
+ * @return {Object|null} Object - delete results info; null = error deleteing
  */
 async function deleteCart(cartId) {
   const sqlCommand = `
@@ -94,12 +94,28 @@ async function deleteCart(cartId) {
   try {
     const results = await db.query(sqlCommand, [cartId]);
     if (results && results.rowCount === 1) {
-      return results.rowCount;
+      return {
+        status: 200,
+        rowCount: 1
+      }
+      // return results.rowCount;
     } else {
-      return null;
+      return {
+        status: 404,
+        rowCount: 0
+      }
+      // return null;
     }
   } catch (err) {
-    throw Error(err)
+    if (err.code === '23503') {
+      return {
+        status: 409,
+        rowCount: 0
+      }
+      // res.status(409).send('Cannot delete - constraint error');
+    } else {
+      throw Error(err);
+    }
   }
 }
 
@@ -115,7 +131,7 @@ async function deleteCartItems(cartId) {
     WHERE cart_id = $1;`;
   try {
     const results = await db.query(sqlCommand, [cartId]);
-    if (results && results.rowCount) {
+    if (results && results.rowCount >= 0) {
       return results.rowCount;
     } else {
       return null;

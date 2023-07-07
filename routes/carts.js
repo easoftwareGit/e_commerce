@@ -169,20 +169,25 @@ cartsRouter.delete('/:id', async (req, res) => {
   //  where # is the id number for the cart
   // body: not used
   
-  const sqlCommand = `DELETE FROM carts WHERE id = $1`;
   try {
-    const results = await db.query(sqlCommand, [req.cartId]);
-    if (results.rowCount === 1) {
-      res.status(200).send(`${req.cartId}`);
+    const results = await cartQueries.deleteCart(req.cartId);
+    if (results) {
+      if (results.status === 200) {      
+        res.status(200).send(`${req.cartId}`);
+      } else {
+        if (results.status === 404) {
+          res.status(404).send(`Cart not found`);
+        } else if (results.status === 409) {
+          res.status(409).send('Cannot delete - constraint error');
+        } else {
+          res.status(400).send('Unknown error');
+        }      
+      }
     } else {
-      res.status(404).send(`Cart not found`);
+      res.status(400).send('Unknown error');
     }
   } catch (err) {
-    if (err.code === '23503') {
-      res.status(409).send('Cannot delete - constraint error');
-    } else {
-      throw Error(err);
-    }
+    throw Error(err);
   }
 });
 
@@ -349,20 +354,17 @@ cartsRouter.delete('/:id/allItems', async (req, res) => {
   //  where # is the id number for the cart
   // body: not used
     
-  const sqlCommand = `DELETE FROM cart_items WHERE cart_id = $1`;
-  try {
-    const results = await db.query(sqlCommand, [req.cartId]);
-    if (results.rowCount > 0) {
-      res.status(200).send(`${req.cartId}`);
+  try {    
+    const results = await cartQueries.deleteCartItems(req.cartId);
+    // deleteCartItems returns # of rows deleted. 
+    // 0 rows is valid, so error on null, empty strings, false, undefined
+    if (!results && results !== 0) {
+      res.status(404).send('Could not delete cart items');
     } else {
-      res.status(404).send(`Cart items not found`);
+      res.status(200).send(`${req.cartId}`);
     }
   } catch (err) {
-    if (err.code === '23503') {
-      res.status(409).send('Cannot delete - constraint error');
-    } else {
-      throw Error(err);
-    }
+    throw Error(err);
   }
 });
 

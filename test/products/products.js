@@ -139,7 +139,6 @@ function testProducts(app) {
     });
 
     describe('POST /products', function() {
-
       const newProduct = {
         "name": "Child Shoveler",
         "model_number": "100-301-01",
@@ -318,7 +317,6 @@ function testProducts(app) {
     });
 
     describe('DELETE /products/:id', function() {
-
       const toDelProduct = {
         "name": "Child Shoveler",
         "model_number": "100-301-01",
@@ -328,10 +326,17 @@ function testProducts(app) {
       let delProductId;
 
       before('before DELETE tests', async function() {
-        const response = await request(app)
-          .post('/products')
-          .send(toDelProduct);
-        const postedProduct = response.body;
+        const sqlCommand = `
+          INSERT INTO products (name, model_number, description, price) 
+          VALUES ($1, $2, $3, $4) RETURNING *`;
+        const { name, model_number, description, price } = toDelProduct;
+        const rowValues = [name, model_number, description, price];
+        const response = await db.query(sqlCommand, rowValues);
+        // const response = await request(app)
+        //   .post('/products')
+        //   .send(toDelProduct);
+        // const postedProduct = response.body;
+        const postedProduct = response.rows[0];
         delProductId = postedProduct.id;
       });
 
