@@ -44,6 +44,15 @@ function testCarts(app) {
         expect(doesExist).to.be.true;
       });
 
+      it('GET /carts with no data in table, returns string', async function() {
+        const response = await request(app)
+          .get('/carts')
+          .expect(200);        
+        // expect(response.body).to.be.a('string');
+        expect(response.body).to.be.an.instanceOf(Array);          
+        expect(response.body.length).to.equal(0);
+      });
+
       it('INSERT new carts', async function() {
         const numInserted = await setupCarts.insertAllCarts(); 
         expect(numInserted).to.equal(cartCount);
@@ -142,6 +151,7 @@ function testCarts(app) {
           expect(cart).to.have.ownProperty('user_id');
         });
       });
+
     });
 
     describe('GET /carts/:id', function() {
@@ -331,6 +341,16 @@ function testCarts(app) {
             .send(missingDataCart)
             .expect(400)
         });
+
+        it('did not PUT with with non existing user', async function() {
+          const nonExitingUserCart = Object.assign({}, testCart);
+          nonExitingUserCart.user_id = 1234567890;
+          return await request(app)
+            .put(`/carts/${putCartId}`)
+            .send(nonExitingUserCart)
+            .expect(409)
+        });
+
       });
     });
     

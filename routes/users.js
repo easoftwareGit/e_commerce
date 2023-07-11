@@ -34,7 +34,7 @@ usersRouter.get('/', async (req, res) => {
     if (db.validResultsAtLeast1Row(results)) {
       res.status(200).json(results.rows);      
     } else {
-      res.status(200).json('No user rows');
+      res.status(404).json('No user rows');
     }    
   } catch (err) {
     throw Error(err);

@@ -33,11 +33,11 @@ cartsRouter.get('/', async (req, res) => {
   const sqlCommand = `SELECT * FROM carts`;  
   try {
     const results = await db.query(sqlCommand);
-    if (db.validResultsAtLeast1Row(results)) {
+    if (db.validResultsAtLeast1Row(results) || results.rows.length === 0) { 
       res.status(200).json(results.rows);      
     } else {
-      res.status(200).json('No cart rows');
-    }    
+      res.status(400).json('error getting carts');
+    }
   } catch (err) {
     throw Error(err);
   }
@@ -156,6 +156,8 @@ cartsRouter.put('/:id', async (req, res) => {
       res.status(400).json('user_id already used');
     } else if (err.code === '23502') {
       res.status(400).json('required value missing');
+    } else if (err.code === '23503') {
+      res.status(409).json(err.message);
     } else {
       throw Error(err);
     }    
@@ -230,7 +232,7 @@ cartsRouter.get('/:id/items', async (req, res) => {
   }
 });
 
-cartsRouter.get('/:id/items/:itemId', async (req, res) => {
+cartsRouter.get('/items/:itemId', async (req, res) => {
 
   // GET request
   // path: localhost:3000/carts/id#/items/itemId#
@@ -257,13 +259,14 @@ cartsRouter.post('/:id/items', async (req, res) => {
   //  where id# is the id number for the cart
   // body: JSON object
   //  {
+  //    cart_id: 2
   //    product_id: 1
   //    quantity: 2
   //  }
   
-  const cartId = parseInt(req.params.id); 
-  const { product_id, quantity } = req.body;
-  const rowValues = [cartId, product_id, quantity];
+  // const cartId = parseInt(req.params.id); 
+  const { cart_id, product_id, quantity } = req.body;
+  const rowValues = [cart_id, product_id, quantity];
   const sqlCommand = `
     INSERT INTO cart_items (cart_id, product_id, quantity) 
     VALUES ($1, $2, $3) RETURNING *`;
@@ -278,14 +281,14 @@ cartsRouter.post('/:id/items', async (req, res) => {
     if (err.code === '23502') {
       res.status(400).json('required value missing');
     } else if (err.code === '23503') {
-      res.status(400).json('product not valid');
+      res.status(409).json(err.message);
     } else {
       throw Error(err);
     }    
   }
 });
 
-cartsRouter.put('/:id/items/:itemId', async (req, res) => {
+cartsRouter.put('/items/:itemId', async (req, res) => {
 
   // PUT request
   // path: localhost:3000/carts/id#/items/itemId#
@@ -316,14 +319,14 @@ cartsRouter.put('/:id/items/:itemId', async (req, res) => {
     if (err.code === '23502') {
       res.status(400).json('required value missing');
     } else if (err.code === '23503') {
-      res.status(400).json('product not valid');
+      res.status(409).json(err.message);
     } else {
       throw Error(err);
     }    
   }
 });
 
-cartsRouter.delete('/:id/items/:itemId', async (req, res) => {
+cartsRouter.delete('/items/:itemId', async (req, res) => {
 
   // DELETE request
   // path: localhost:3000/carts/#
@@ -339,11 +342,7 @@ cartsRouter.delete('/:id/items/:itemId', async (req, res) => {
       res.status(404).send(`Cart item not found`);
     }
   } catch (err) {
-    if (err.code === '23503') {
-      res.status(409).send('Cannot delete - constraint error');
-    } else {
-      throw Error(err);
-    }
+    throw Error(err);
   }
 });
 

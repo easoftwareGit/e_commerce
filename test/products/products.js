@@ -300,7 +300,7 @@ function testProducts(app) {
           return request(app)
             .put(`/products/${putProductId}`)
             .send(duplicateProduct)
-            .expect(404)
+            .expect(400)
         });
 
         // all missing data paths tested in /POST section

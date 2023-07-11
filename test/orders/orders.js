@@ -41,6 +41,15 @@ function testOrders(app) {
         expect(doesExist).to.be.true;
       });
 
+      it('GET /orders with no data in table, returns string', async function() {
+        const response = await request(app)
+          .get('/orders')
+          .expect(200);        
+        expect(response.body).to.be.an.instanceOf(Array);          
+        expect(response.body.length).to.equal(0);
+        // expect(response.body).to.be.a('string');        
+      });
+
       it('INSERT new orders', async function() {
         const numInserted = await setupOrders.insertAllOrders(); 
         expect(numInserted).to.equal(orderCount);
@@ -124,6 +133,31 @@ function testOrders(app) {
           .delete(`/users/${testUserId}`)
           .expect(409);   // constraint error
       });
+    });
+
+    describe('GET /orders', function() {
+
+      it('returns an array', async function() {
+        const response = await request(app)
+          .get('/orders')
+          .expect(200);
+        expect(response.body).to.be.an.instanceOf(Array);
+      });
+
+      it('returns an array of all orders', async function() {
+        const response = await request(app)
+          .get('/orders')
+          .expect(200);
+        expect(response.body.length).to.be.equal(orderCount);
+        response.body.forEach((order) => {
+          expect(order).to.have.ownProperty('id');
+          expect(order).to.have.ownProperty('created');
+          expect(order).to.have.ownProperty('modified');
+          expect(order).to.have.ownProperty('total_price');
+          expect(order).to.have.ownProperty('user_id');
+        });
+      });
+
     });
 
     describe('GET /orders/:id', function() {
@@ -235,6 +269,25 @@ function testOrders(app) {
           .send(invalidOrder)
           .expect(400);
       });
+
+      it('did NOT post order with non existant user_id', async function() {
+        invalidOrder.total_price = 23.45;
+        invalidOrder.user_id = 1234567890;
+        return await request(app)
+          .post('/orders')
+          .send(invalidOrder)
+          .expect(409);
+      });
+
+      it('did NOT post order with non invalid user_id', async function() {
+        invalidOrder.total_price = 23.45;
+        invalidOrder.user_id = 'ABC';
+        return await request(app)
+          .post('/orders')
+          .send(invalidOrder)
+          .expect(400);
+      });
+
     });
 
     describe('PUT /orders/:id', function() {
@@ -324,6 +377,16 @@ function testOrders(app) {
             .send(missingDataOrder)
             .expect(400)
         });
+
+        it('did NOT PUT order with non existant user_id', async function() {
+          const nonExistingUserOrder = Object.assign({}, testOrder);          
+          nonExistingUserOrder.user_id = 1234567890;
+          return await request(app)
+            .put(`/orders/${putOrderId}`)
+            .send(nonExistingUserOrder)
+            .expect(409);
+        });
+    
       });
     });
 

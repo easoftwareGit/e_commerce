@@ -181,13 +181,12 @@ function testCartItems(app) {
 
     });
 
-    describe('GET /carts/:id/items/:itemId', function() {
-      const getCartId = 1;
+    describe('GET /carts/items/:itemId', function() {      
       const getItemId = 2;
 
       it('returns a single cart_item object', async function() {
         const response = await request(app)
-          .get(`/carts/${getCartId}/items/${getItemId}`)
+          .get(`/carts/items/${getItemId}`)
           .expect(200);
         const item = response.body;
         expect(item).to.be.an.instanceOf(Object);
@@ -196,7 +195,7 @@ function testCartItems(app) {
 
       it('returns a full cart_item object', async function() {
         const response = await request(app)
-          .get(`/carts/${getCartId}/items/${getItemId}`)
+          .get(`/carts/items/${getItemId}`)
           .expect(200);
         const item = response.body;
         expect(item).to.have.ownProperty('id');
@@ -207,7 +206,7 @@ function testCartItems(app) {
 
       it('returned cart_item has the correct id', async function() {
         const response = await request(app)
-          .get(`/carts/${getCartId}/items/${getItemId}`)
+          .get(`/carts/items/${getItemId}`)
           .expect(200);
         const item = response.body;
         expect(item.id).to.be.an.equal(getItemId);
@@ -215,13 +214,13 @@ function testCartItems(app) {
 
       it('called with a non-numeric cart item ID returns a 404 error', function() {
         return request(app)
-          .get(`/carts/${getCartId}/items/ABC`)
+          .get(`/carts/items/ABC`)
           .expect(404);
       });
 
       it('called with a invalid cart item ID returns a 404 error', function() {
         return request(app)
-          .get(`/carts/${getCartId}/items/1234567890`)
+          .get(`/carts/items/1234567890`)
           .expect(404);
       });
     });
@@ -230,13 +229,16 @@ function testCartItems(app) {
       const cartId = 1;
       const nonExistantId = 1234;
       const postProductId = 2
+      const postQuantity = 5
       const newItem = {    
+        cart_id: cartId,
         product_id: postProductId,
-        quantity: 3
+        quantity: postQuantity 
       };
-      const invalidItem = {    
+      const invalidItem = {            
+        cart_id: cartId,
         product_id: nonExistantId,  
-        quantity: 5
+        quantity: postQuantity
       };
 
       const resetSqlCommand = `
@@ -266,14 +268,14 @@ function testCartItems(app) {
         return await request(app)
           .post(`/carts/${nonExistantId}/items`)
           .send(invalidItem)
-          .expect(400);
+          .expect(409);
       });
 
       it('did NOT post cart item with a non-existant product_id', async function() {      
         return await request(app)
           .post(`/carts/${cartId}/items`)
           .send(invalidItem)
-          .expect(400);
+          .expect(409);
       });
 
       it('did NOT post cart item with no product_id', async function() {      
@@ -295,19 +297,21 @@ function testCartItems(app) {
 
     });
 
-    describe('PUT /carts/:id/items/:itemId', function() {
+    describe('PUT /carts/items/:itemId', function() {
       const putCartId = 1;
       const putItemId = 2;
+      const putQuantity = 5
+      const nonExistantId = 1234;
       const resetSqlCommand = `
         UPDATE cart_items
         SET cart_id = 1, product_id = 4, quantity = 2
         WHERE id = 2;`;
       const testItem = {
         product_id: 1,
-        quantity: 8
+        quantity: putQuantity
       }
 
-      describe('Valid /carts/:id/items/:itemId', function() {
+      describe('Valid /carts/items/:itemId', function() {
 
         before('before 1st PUT test', async function() {
           await db.query(resetSqlCommand);
@@ -320,14 +324,13 @@ function testCartItems(app) {
         it('updates the correct cart_item and returns it', async function() {
           let initialItem;
           let updatedItem;
-
-          const response = await request(app)
-            .get(`/carts/${putCartId}/items/${putItemId}`);
-          initialItem = response.body;
+          const getSqlCommand = `SELECT * FROM cart_items WHERE id = ${putItemId}`;
+          const response = await db.query(getSqlCommand);
+          initialItem = response.rows[0];
           updatedItem = Object.assign({}, testItem);
           updatedItem.cart_id = putCartId;
           const response_1 = await request(app)
-            .put(`/carts/${putCartId}/items/${putItemId}`)
+            .put(`/carts/items/${putItemId}`)
             .send(updatedItem)
             .expect(200);
           const resturnedItem = response_1.body;
@@ -338,33 +341,34 @@ function testCartItems(app) {
         });
       });
 
-      describe('Invalid /carts/:id/items/:itemId', function() {
+      describe('Invalid /carts/items/:itemId', function() {
         const testItem = {
+          cart_id: putCartId,
           product_id: 1,
-          quantity: 4
+          quantity: putQuantity
         };
-
-        it('called with a non-numeric cart item ID returns a 404 error', function() {
+        
+        it('called with a non-numeric cart item ID returns a 404 error', function() {          
           return request(app)
-            .put(`/carts/${putCartId}/items/ABC`)
+            .put(`/carts/items/ABC`)
             .send(testItem)
             .expect(404)
         });
 
         it('called with an non existing cart item ID returns a 404 error', function() {
           return request(app)
-            .put(`/carts/${putCartId}/items/1234567890`)
+            .put(`/carts/items/1234567890`)
             .send(testItem)
             .expect(404)
         });
 
-        it('did not put with a missing product_id', async function() {
+        it('did not put with a non existant product_id', async function() {
           const invalidItem = Object.assign({}, testItem);
-          invalidItem.product_id = 1234;
+          invalidItem.product_id = nonExistantId;
           return await request(app)
-            .put(`/carts/${putCartId}`)
+            .put(`/carts/items/${putCartId}`)
             .send(invalidItem)
-            .expect(400)
+            .expect(409)
         });
 
         // other tests for missing data performed in POST tests 
@@ -372,14 +376,14 @@ function testCartItems(app) {
           const invalidItem = Object.assign({}, testItem);
           invalidItem.product_id = null;
           return await request(app)
-            .put(`/carts/${putCartId}`)
+            .put(`/carts/items/${putCartId}`)
             .send(invalidItem)
             .expect(400)
         });
       });
     });
 
-    describe('DELETE /carts/:id/items/:itemId', function() {
+    describe('DELETE /carts/items/:itemId', function() {
       const testCartId = 1;
       const delProductId = 2;
       const toDelItem = {
@@ -388,7 +392,7 @@ function testCartItems(app) {
       };
       let delItemId;      
 
-      before('before DELETE /carts/:id/items/:itemId tests', async function() {
+      before('before DELETE /carts/items/:itemId tests', async function() {
         const sqlCommand = `
           INSERT INTO cart_items (cart_id, product_id, quantity) 
           VALUES ($1, $2, $3) RETURNING *`;
@@ -399,28 +403,28 @@ function testCartItems(app) {
         delItemId = postedItem.id;        
       });
 
-      describe('Valid DELETE /carts/:id/items/:itemId', function() {
+      describe('Valid DELETE /carts/items/:itemId', function() {
 
         it('deletes a cart item', async function() {
           const response = await request(app)
-            .delete(`/carts/${testCartId}/items/${delItemId}`)
+            .delete(`/carts/items/${delItemId}`)
             .expect(200)
           const itemId = parseInt(response.text);
           expect(itemId).to.equal(delItemId);
         });
       });
 
-      describe('Invalid DELETE /carts/:id/items/:itemId', function() {
+      describe('Invalid DELETE /carts/items/:itemId', function() {
 
         it('called with a non-numeric cart ID returns a 404 error', function() {
           return request(app)
-            .delete(`/carts/${testCartId}/items/ABC`)          
+            .delete(`/carts/items/ABC`)          
             .expect(404)
         });
 
         it('called with an non existing cart ID returns a 404 error', function() {
           return request(app)
-            .delete(`/carts/${testCartId}/items/1234567890`)          
+            .delete(`/carts/items/1234567890`)          
             .expect(404)
         });        
       });

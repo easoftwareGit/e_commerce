@@ -1,682 +1,934 @@
-openapi: 3.0.3
+---
+openapi: 3.0.0
+servers:
+- url: http://localhost:3000/
 info:
-  title: E-Commerce 1.0
-  description: >-
-    This is a Codecademy E-Commerce OpenAPI 3.0 specification. 
-    You can find out more about it at
-
-    https://www.codecademy.com/journeys/full-stack-engineer/paths/fscj-22-back-end-development/tracks/fscj-22-portfolio-project-e-commerce-app-rest-api/modules/fscp-22-e-commerce-app-rest-api-1776f9cc-430a-48a4-872f-96a415b6366d/kanban_projects/ecommerce-app-rest-api
-
-    Some useful links:
-
-  termsOfService: http://
+  description: 'This is a sample E-Commerce app.  This project requires that you build a fully-functioning e-commerce application REST API that allows users to perform various CRUD operations such as registering an account, browsing products for sale, etc.'
+  version: 1.0.0
+  title: E-Commerce REST API application
+  termsOfService: https://www.codecademy.com/about
   contact:
     email: easoftware@gmail.com
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
-  version: 1.0.11
-externalDocs:
-  description: Add Description here
-  url: http://
-servers:
-  - url: localhost:3000
-    variables: {}
-    description: Local host at Port 3000
 tags:
-  - name: pet
-    description: Everything about your Pets
-    externalDocs:
-      description: Find out more
-      url: http://swagger.io
-  - name: store
-    description: Access to Petstore orders
-    externalDocs:
-      description: Find out more about our store
-      url: http://swagger.io
-  - name: user
-    description: Operations about user
+- name: E-Commerce
+  description: Sample E-Commerce app
+- name: users
+  description: Operations about users
 paths:
-  /pet:
-    put:
-      tags:
-        - pet
-      summary: Update an existing pet
-      description: Update an existing pet by Id
-      operationId: updatePet
-      requestBody:
-        description: Update an existent pet in the store
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Pet'
-          application/xml:
-            schema:
-              $ref: '#/components/schemas/Pet'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/Pet'
-        required: true
-      responses:
-        '200':
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Pet'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/Pet'
-        '400':
-          description: Invalid ID supplied
-        '404':
-          description: Pet not found
-        '405':
-          description: Validation exception
-      security:
-        - petstore_auth:
-            - write:pets
-            - read:pets
+  "/users":
     post:
       tags:
-        - pet
-      summary: Add a new pet to the store
-      description: Add a new pet to the store
-      operationId: addPet
-      requestBody:
-        description: Create a new pet in the store
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Pet'
-          application/xml:
-            schema:
-              $ref: '#/components/schemas/Pet'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/Pet'
-        required: true
-      responses:
-        '200':
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Pet'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/Pet'
-        '405':
-          description: Invalid input
-      security:
-        - petstore_auth:
-            - write:pets
-            - read:pets
-  /pet/findByStatus:
-    get:
-      tags:
-        - pet
-      summary: Finds Pets by status
-      description: Multiple status values can be provided with comma separated strings
-      operationId: findPetsByStatus
-      parameters:
-        - name: status
-          in: query
-          description: Status values that need to be considered for filter
-          required: false
-          explode: true
-          schema:
-            type: string
-            default: available
-            enum:
-              - available
-              - pending
-              - sold
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Pet'
-            application/xml:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Pet'
-        '400':
-          description: Invalid status value
-      security:
-        - petstore_auth:
-            - write:pets
-            - read:pets
-  /pet/findByTags:
-    get:
-      tags:
-        - pet
-      summary: Finds Pets by tags
-      description: >-
-        Multiple tags can be provided with comma separated strings. Use tag1,
-        tag2, tag3 for testing.
-      operationId: findPetsByTags
-      parameters:
-        - name: tags
-          in: query
-          description: Tags to filter by
-          required: false
-          explode: true
-          schema:
-            type: array
-            items:
-              type: string
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Pet'
-            application/xml:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Pet'
-        '400':
-          description: Invalid tag value
-      security:
-        - petstore_auth:
-            - write:pets
-            - read:pets
-  /pet/{petId}:
-    get:
-      tags:
-        - pet
-      summary: Find pet by ID
-      description: Returns a single pet
-      operationId: getPetById
-      parameters:
-        - name: petId
-          in: path
-          description: ID of pet to return
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Pet'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/Pet'
-        '400':
-          description: Invalid ID supplied
-        '404':
-          description: Pet not found
-      security:
-        - api_key: []
-        - petstore_auth:
-            - write:pets
-            - read:pets
-    post:
-      tags:
-        - pet
-      summary: Updates a pet in the store with form data
-      description: ''
-      operationId: updatePetWithForm
-      parameters:
-        - name: petId
-          in: path
-          description: ID of pet that needs to be updated
-          required: true
-          schema:
-            type: integer
-            format: int64
-        - name: name
-          in: query
-          description: Name of pet that needs to be updated
-          schema:
-            type: string
-        - name: status
-          in: query
-          description: Status of pet that needs to be updated
-          schema:
-            type: string
-      responses:
-        '405':
-          description: Invalid input
-      security:
-        - petstore_auth:
-            - write:pets
-            - read:pets
-    delete:
-      tags:
-        - pet
-      summary: Deletes a pet
-      description: delete a pet
-      operationId: deletePet
-      parameters:
-        - name: api_key
-          in: header
-          description: ''
-          required: false
-          schema:
-            type: string
-        - name: petId
-          in: path
-          description: Pet id to delete
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '400':
-          description: Invalid pet value
-      security:
-        - petstore_auth:
-            - write:pets
-            - read:pets
-  /pet/{petId}/uploadImage:
-    post:
-      tags:
-        - pet
-      summary: uploads an image
-      description: ''
-      operationId: uploadFile
-      parameters:
-        - name: petId
-          in: path
-          description: ID of pet to update
-          required: true
-          schema:
-            type: integer
-            format: int64
-        - name: additionalMetadata
-          in: query
-          description: Additional Metadata
-          required: false
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/octet-stream:
-            schema:
-              type: string
-              format: binary
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiResponse'
-      security:
-        - petstore_auth:
-            - write:pets
-            - read:pets
-  /store/inventory:
-    get:
-      tags:
-        - store
-      summary: Returns pet inventories by status
-      description: Returns a map of status codes to quantities
-      operationId: getInventory
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties:
-                  type: integer
-                  format: int32
-      security:
-        - api_key: []
-  /store/order:
-    post:
-      tags:
-        - store
-      summary: Place an order for a pet
-      description: Place a new order in the store
-      operationId: placeOrder
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Order'
-          application/xml:
-            schema:
-              $ref: '#/components/schemas/Order'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/Order'
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Order'
-        '405':
-          description: Invalid input
-  /store/order/{orderId}:
-    get:
-      tags:
-        - store
-      summary: Find purchase order by ID
-      description: >-
-        For valid response try integer IDs with value <= 5 or > 10. Other values
-        will generate exceptions.
-      operationId: getOrderById
-      parameters:
-        - name: orderId
-          in: path
-          description: ID of order that needs to be fetched
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Order'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/Order'
-        '400':
-          description: Invalid ID supplied
-        '404':
-          description: Order not found
-    delete:
-      tags:
-        - store
-      summary: Delete purchase order by ID
-      description: >-
-        For valid response try integer IDs with value < 1000. Anything above
-        1000 or nonintegers will generate API errors
-      operationId: deleteOrder
-      parameters:
-        - name: orderId
-          in: path
-          description: ID of the order that needs to be deleted
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '400':
-          description: Invalid ID supplied
-        '404':
-          description: Order not found
-  /user:
-    post:
-      tags:
-        - user
+      - users
       summary: Create user
-      description: This can only be done by the logged in user.
+      description: This can only be done when the user registers.
       operationId: createUser
-      requestBody:
-        description: Created user object
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/User'
-          application/xml:
-            schema:
-              $ref: '#/components/schemas/User'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/User'
       responses:
-        default:
+        '201':
           description: successful operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/User'
-  /user/createWithList:
-    post:
-      tags:
-        - user
-      summary: Creates list of users with given input array
-      description: Creates list of users with given input array
-      operationId: createUsersWithListInput
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/User'
-      responses:
-        '200':
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/User'
-        default:
-          description: successful operation
-  /user/login:
-    get:
-      tags:
-        - user
-      summary: Logs user into the system
-      description: ''
-      operationId: loginUser
-      parameters:
-        - name: username
-          in: query
-          description: The user name for login
-          required: false
-          schema:
-            type: string
-        - name: password
-          in: query
-          description: The password for login in clear text
-          required: false
-          schema:
-            type: string
-      responses:
-        '200':
-          description: successful operation
-          headers:
-            X-Rate-Limit:
-              description: calls per hour allowed by the user
-              schema:
-                type: integer
-                format: int32
-            X-Expires-After:
-              description: date in UTC when token expires
-              schema:
-                type: string
-                format: date-time
-          content:
-            application/xml:
-              schema:
-                type: string
-            application/json:
-              schema:
-                type: string
+                "$ref": "#/components/schemas/Users"
         '400':
-          description: Invalid username/password supplied
-  /user/logout:
-    get:
-      tags:
-        - user
-      summary: Logs out current logged in user session
-      description: ''
-      operationId: logoutUser
-      parameters: []
-      responses:
-        default:
-          description: successful operation
-  /user/{username}:
-    get:
-      tags:
-        - user
-      summary: Get user by user name
-      description: ''
-      operationId: getUserByName
-      parameters:
-        - name: username
-          in: path
-          description: 'The name that needs to be fetched. Use user1 for testing. '
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/User'
-        '400':
-          description: Invalid username supplied
+          description: email already used, required value missing
         '404':
-          description: User not found
+          description: user not inserted
+      requestBody:
+        "$ref": "#/components/requestBodies/UsersPost"
+    get:
+      tags:
+      - users
+      summary: Gets all users
+      description: ''
+      operationId: getAllUsers
+      responses:
+        '200':
+          description: successful opertion
+          content:
+            application/json:
+              schema: 
+                type: array
+                items: 
+                  "$ref": "#/components/schemas/Users"  
+        '404':
+          description: 'no user rows found'
+  "/users/{id}":
+    get:
+      tags:
+      - users
+      summary: Get user by user id
+      description: ''
+      operationId: getUserById
+      parameters:
+      - name: id
+        in: path
+        description: 'The user id that needs to be fetched. Use 2 for testing. '
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Users"
+        '404':
+          description: Invalid User ID supplied, User not found
     put:
       tags:
-        - user
-      summary: Update user
-      description: This can only be done by the logged in user.
-      operationId: updateUser
+      - users
+      summary: update user by user id
+      description: 'This can only be done by the logged in user.'
+      operationId: updateUserById
       parameters:
-        - name: username
-          in: path
-          description: name that need to be deleted
-          required: true
-          schema:
-            type: string
-      requestBody:
-        description: Update an existent user in the store
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/User'
-          application/xml:
-            schema:
-              $ref: '#/components/schemas/User'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/User'
+      - name: id
+        in: path
+        description: 'The product id that needs to be updated. Use 2 for testing. '
+        required: true
+        schema:
+          type: integer
+          minimum: 1
       responses:
-        default:
+        '200':
           description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Users"
+        '400':
+          description: email already used, required value missing
+        '404':
+          description: Invalid User ID supplied, User not found
+      requestBody:
+        "$ref": "#/components/requestBodies/UsersPut"
     delete:
       tags:
-        - user
+      - users
       summary: Delete user
       description: This can only be done by the logged in user.
       operationId: deleteUser
       parameters:
-        - name: username
-          in: path
-          description: The name that needs to be deleted
-          required: true
-          schema:
-            type: string
+      - name: id
+        in: path
+        description: 'The user id that needs to be deleted. In testing, use before() to generate user to delete.'
+        required: true
+        schema:
+          type: integer
+          minimum: 1
       responses:
-        '400':
-          description: Invalid username supplied
+        '200':
+          description: Deleted user - user's id returned as a string
+          content:
+            text/plain: 
+              schema:
+                type: string
         '404':
           description: User not found
+        '409':
+          description: Cannot delete - constraint error
+  "/auth/register":
+    post:
+      tags:
+      - auth
+      description: ''
+      operationId: registerUser
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Users"
+        '409': 
+          description: email already in use
+        '500': 
+          description: could not create user
+      requestBody:
+        "$ref": "#/components/requestBodies/AuthRegister"
+  "/auth/login":
+    post:
+      tags:
+      - auth
+      description: Uses passort and passport-local strategy
+      operationId: loginUser
+      responses:
+        '200':
+          description: logged in user - user's id returned as a string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+      requestBody:
+        "$ref": "#/components/requestBodies/AuthLogin"
+  "/products":
+    post:
+      tags:
+      - products
+      description: Can only be done by admin
+      operationId: createProduct
+      responses:
+        '201':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Products"
+        '400': 
+          description: name already used, model_number already used, required value missing
+        '404':
+          description: Product not inserted
+      requestBody:
+        "$ref": "#/components/requestBodies/Products"
+    get:
+      tags:
+      - products
+      description: Can only be done by admin
+      operationId: getProduct
+      responses:
+        '200':
+          description: successful opertion
+          content:
+            application/json:
+              schema: 
+                type: array
+                items: 
+                  "$ref": "#/components/schemas/Products"  
+        '404':
+          description: 'no product rows found'
+  "/products/{id}":  
+    get:
+      tags:
+      - products
+      summary: get procuct by product id
+      description: ''
+      operationId: getProductById
+      parameters:
+      - name: id
+        in: path
+        description: 'The product id that needs to be fetched. Use 2 for testing. '
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Products"
+        '404':
+          description: Invalid Product ID supplied, Product not found
+    put:
+      tags:
+      - products
+      summary: update product by product id
+      description: Can only be done by admin
+      operationId: updateProductById
+      parameters:
+      - name: id
+        in: path
+        description: 'The product id that needs to be updated. Use 2 for testing. '
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Products"
+        '400':
+          description: name already used, model_number already used, required value missing
+        '404':
+          description: Invalid Product ID supplied, Product not found
+      requestBody:
+        "$ref": "#/components/requestBodies/Products"
+    delete:
+      tags:
+      - products
+      summary: Delete product
+      description: Can only be done by admin
+      operationId: deleteProduct
+      parameters:
+      - name: id
+        in: path
+        description: 'The product id that needs to be deleted. In testing, use before() to generate product to delete.'
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+      responses:
+        '200':
+          description: Deleted product - product's id returned as a string
+          content:
+            text/plain: 
+              schema:
+                type: string
+        '404':
+          description: Product not found
+        '409':
+          description: Cannot delete - constraint error
+  "/carts":
+    post:
+      tags:
+      - carts
+      summary: Create cart
+      description: 'If non-exiatant, done by the app when the user selects a product to purchare.'
+      operationId: createCart
+      responses:
+        '201':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Carts"
+        '400':
+          description: user_id already used, required value missing
+        '404':
+          description: cart not inserted
+        '409':
+          description: user_id violates foreign key constraint
+      requestBody:
+        "$ref": "#/components/requestBodies/CartsPost"
+    get:
+      tags:
+      - carts
+      summary: Gets all carts
+      description: ''
+      operationId: getAllCarts
+      responses:
+        '200':
+          description: successful opertion (No cart rows is OK, array is empty)
+          content:
+            application/json:
+              schema: 
+                type: array
+                items: 
+                  "$ref": "#/components/schemas/Carts"  
+  "/carts/{id}":
+    get:
+      tags:
+      - carts
+      summary: Get cart by cart id
+      description: ''
+      operationId: getCartById
+      parameters:
+      - name: id
+        in: path
+        description: 'The cart id that needs to be fetched. Use 2 for testing. '
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Carts"
+        '404':
+          description: Invalid Cart ID supplied, Cart not found
+    put:
+      tags:
+      - carts
+      summary: update cart by cart id
+      description: 'This can only be done by the logged in user.'
+      operationId: updateCartById
+      parameters:
+      - name: id
+        in: path
+        description: 'The cart id of the cart that needs to be updated. Use 2 for testing. '
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Carts"
+        '400':
+          description: user_id already used, required value missing
+        '404':
+          description: Invalid Cart ID supplied, Cart not found
+        '409':
+          description: user_id violates foreign key constraint
+      requestBody:
+        "$ref": "#/components/requestBodies/CartsPut"
+    delete:
+      tags:
+      - carts
+      summary: Delete cart
+      description: This can only be done by the app or Admin.
+      operationId: deleteCart
+      parameters:
+      - name: id
+        in: path
+        description: 'The cart id that needs to be deleted. In testing, use before() to generate cart to delete.'
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+      responses:
+        '200':
+          description: Deleted cart - cart's id returned as a string
+          content:
+            text/plain: 
+              schema:
+                type: string
+        '400': 
+          description: unknown error
+        '404':
+          description: Cart not found
+        '409':
+          description: Cannot delete - constraint error        
+  "/carts/{id}/allItems":
+    delete:
+      tags:
+      - carts
+      summary: Delete all cart items on a cart
+      description: 'Done by the user.'
+      operationId: deleteAllCartItems
+      parameters:
+      - name: id
+        in: path
+        description: 'The cart id with cart items to be deleted. In testing, use before() to generate cart id to delete.'
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+      responses:
+        '200':
+          description: Deleted cart items - cart's id returned as a string
+          content:
+            text/plain: 
+              schema:
+                type: string
+        '404':
+          description: Could not delete cart items, invalild cart id
+  "/carts/{id}/checkout":
+    post:
+      tags:
+      - carts
+      summary: Places an order for user from cart
+      description: Done by user. Get payment approval. Moves user's cart and cart items into orders and order items.
+      operationId: checkout
+      parameters:
+      - name: id
+        in: path
+        description: 'The cart id with with cart items, used to create the order. In testing, use before() to generate cart id to delete. For testing, use quantity 5, user_id 2, and create a test cart with test items to use to checkout.'
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Orders"
+        '400':
+          description: could not remove cart, wrong number of cart items removed, could not move cart items into order items, could not create new orders from cart, could not get total price from cart
+        '404':
+          description: Invalid Cart ID supplied, could not place order
+      requestBody:
+        "$ref": "#/components/requestBodies/Carts"
+  "/carts/{id}/items":
+    post:
+      tags:
+      - carts
+      summary: Create cart item
+      description: 'Done when user adds an item to the cart.'
+      operationId: createCartItem
+      parameters:
+      - name: id
+        in: path
+        description: 'The cart id link the cart item. Use 1 for testing. '
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+      responses:
+        '201':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Cart_items"
+        '400':
+          description: product id not valid, required value missing
+        '404':
+          description: cart not found
+        '409':
+          description: cart_id or product_id violates foreign key constraint
+      requestBody:
+        "$ref": "#/components/requestBodies/CartItemsPost"
+    get:
+      tags:
+      - carts
+      summary: Get cart items by cart id
+      description: ''
+      operationId: getCartItemsById
+      parameters:
+      - name: id
+        in: path
+        description: 'The cart id for items to be fetched. Use 1 for testing. '
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema: 
+                type: array
+                items: 
+                  "$ref": "#/components/schemas/Cart_items"
+        '404':
+          description: Invalid Cart ID supplied, Cart not found
+  "/carts/items/{itemId}":
+    get:
+      tags:
+      - carts
+      summary: Get cart item by cart item id
+      description: ''
+      operationId: getCartItemById
+      parameters:
+      - name: itemId
+        in: path
+        description: 'The cart item id that needs to be fetched. Use 2 for testing. '
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Cart_items"
+        '404':
+          description: Invalid Cart Item ID supplied, cart item not found
+    put:
+      tags:
+      - carts
+      summary: Get cart item by cart item id
+      description: ''
+      operationId: getCartItemByCartId
+      parameters:
+      - name: itemId
+        in: path
+        description: 'The cart item id for items to be fetched. Use 2 for testing.'
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Cart_items"
+        '400':
+          description: product id not valid, required value missing
+        '404':
+          description: Invalid Cart Item ID supplied, Cart Item not found
+        '409':
+          description: product_id violates foreign key constraint
+      requestBody:
+        "$ref": "#/components/requestBodies/CartItemsPut"
+    delete:
+      tags:
+      - carts
+      summary: Delete cart item
+      description: Done by the user
+      operationId: deleteCartItem
+      parameters:
+      - name: itemId
+        in: path
+        description: 'The cart item id that needs to be deleted. In testing, use before() to generate cart item to delete.'
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+      responses:
+        '200':
+          description: Deleted cart item - cart item's id returned as a string
+          content:
+            text/plain: 
+              schema:
+                type: string
+        '404':
+          description: Cart item not found, invalid cart item id
+  "/orders":
+    post:
+      tags:
+      - orders
+      summary: Create order
+      description: 'Done by the user'
+      operationId: createOrder
+      responses:
+        '201':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Orders"
+        '400':
+          description: required value missing, invalid data
+        '409':
+          description: order_id or product_id violates foreign key constraint
+      requestBody:
+        "$ref": "#/components/requestBodies/OrdersPost"
+    get:
+      tags:
+      - orders
+      summary: Gets all orders
+      description: ''
+      operationId: getAllOrders
+      responses:
+        '200':
+          description: successful opertion (No orders rows is OK, array is empty)
+          content:
+            application/json:
+              schema: 
+                type: array
+                items: 
+                  "$ref": "#/components/schemas/Orders"
+  "/orders/{id}":  
+    get:
+      tags:
+      - orders
+      summary: Get order by order id
+      description: ''
+      operationId: getOrderById
+      parameters:
+      - name: id
+        in: path
+        description: 'The order id that needs to be fetched. Use 2 for testing. '
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Orders"
+        '404':
+          description: Invalid Order ID supplied, Order not found
+    put:
+      tags:
+      - orders
+      summary: update order by order id
+      description: 'This can only be done by the logged in user.'
+      operationId: updateOrderById
+      parameters:
+      - name: id
+        in: path
+        description: 'The order id of the order that needs to be updated. Use 2 for testing. '
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Orders"
+        '400':
+          description: required value missing
+        '404':
+          description: Invalid Order ID supplied, Order not found
+        '409':
+          description: user_id violates foreign key constraint
+      requestBody:
+        "$ref": "#/components/requestBodies/OrdersPut"
+    delete:
+      tags:
+      - orders
+      summary: Delete order
+      description: This can only be done by the app or Admin.
+      operationId: deleteOrder
+      parameters:
+      - name: id
+        in: path
+        description: 'The order id that needs to be deleted. In testing, use before() to generate cart to delete.'
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+      responses:
+        '200':
+          description: Deleted order - order's id returned as a string
+          content:
+            text/plain: 
+              schema:
+                type: string
+        '400': 
+          description: unknown error
+        '404':
+          description: Order not found
+        '409':
+          description: Cannot delete - constraint error          
+  "/orders/{id}/items":
+    post:
+      tags:
+      - orders
+      summary: Create order item
+      description: 'Done when user checks out.'
+      operationId: createOrderItem
+      parameters:
+      - name: id
+        in: path
+        description: 'The order id link the order item. Use 1 for testing. '
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+      responses:
+        '201':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Order_items"
+        '400':
+          description: product id not valid, required value missing
+        '404':
+          description: order not found
+        '409':
+          description: order_id or product_id violates foreign key constraint
+      requestBody:
+        "$ref": "#/components/requestBodies/CartItemsPost"
+    get:
+      tags:
+      - orders
+      summary: Get order items by order id
+      description: ''
+      operationId: getOrderItemsById
+      parameters:
+      - name: id
+        in: path
+        description: 'The order id for items to be fetched. Use 1 for testing.'
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema: 
+                type: array
+                items: 
+                  "$ref": "#/components/schemas/Order_items"
+        '404':
+          description: Invalid Cart ID supplied, Cart not found
+  "/orders/items/{itemId}":
+    get:
+      tags:
+      - orders
+      summary: Get order item by order item id
+      description: ''
+      operationId: getOrderItemById
+      parameters:
+      - name: itemId
+        in: path
+        description: 'The order item id that needs to be fetched. Use 2 for testing. '
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Order_items"
+        '404':
+          description: Invalid Order Item ID supplied, order item not found
+    put:
+      tags:
+      - orders
+      summary: Get order item by order item id
+      description: ''
+      operationId: getOrderItemByOrderId
+      parameters:
+      - name: itemId
+        in: path
+        description: 'The order item id for items to be fetched. Use 2 for testing.'
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Order_items"
+        '400':
+          description: product id not valid, required value missing
+        '404':
+          description: Invalid Order Item ID supplied, Order Item not found
+        '409':
+          description: product_id violates foreign key constraint
+      requestBody:
+        "$ref": "#/components/requestBodies/CartItemsPut"
+    delete:
+      tags:
+      - orders
+      summary: Delete order item
+      description: Done by the user
+      operationId: deleteOrderItem
+      parameters:
+      - name: itemId
+        in: path
+        description: 'The order item id that needs to be deleted. In testing, use before() to generate order item to delete.'
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+      responses:
+        '200':
+          description: Deleted order item - order item's id returned as a string
+          content:
+            text/plain: 
+              schema:
+                type: string
+        '404':
+          description: Order item not found, invalid order item id
 components:
   schemas:
+    Carts:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        created:
+          type: string
+          format: date-time
+        modified:
+          type: string
+          format: date-time
+        used_id:
+          type: integer
+          format: int32
+    Cart_items:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        user_id:
+          type: integer
+          format: int32
+        product_id:
+          type: integer
+          format: int32
+        quantity:
+          type: integer
+          format: int32
     Products:
       type: object
       properties:
         id:
           type: integer
           format: int32
-          example: 10
         name:
           type: string
-          example: Large Widget
         model_number:
           type: string
-          example: 123XYZ
         description:
           type: string
-          example: Widget size Large
         price:
           type: number
-          example: 12.34
-    Order:
+          format: Decimal
+    Orders:
       type: object
       properties:
         id:
           type: integer
-          format: int64
-          example: 10
-        petId:
-          type: integer
-          format: int64
-          example: 198772
-        quantity:
-          type: integer
           format: int32
-          example: 7
-        shipDate:
+        created:
+          type: string
+          format: date-time
+        modified:
           type: string
           format: date-time
         status:
           type: string
-          description: Order Status
-          example: approved
-          enum:
-            - placed
-            - approved
-            - delivered
-        complete:
-          type: boolean
-      xml:
-        name: order
-    User:
+        total_price:
+          type: number
+          format: Decimal
+        user_id:
+          type: integer
+          format: int32
+    Order_items:
       type: object
       properties:
         id:
           type: integer
           format: int32
-          example: 10
+        order_id:
+          type: integer
+          format: int32
+        product_id:
+          type: integer
+          format: int32
+        quantity:
+          type: integer
+          format: int32
+        price_unit:
+          type: number
+          format: Decimal
+    Users:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
         email:
           type: string
-          example: john@email.com
-        password:
+          format: email
+        password_hash:
           type: string
-          example: '12345'
-        firstName:
+        first_name:
           type: string
-          example: John
-        lastName:
+        last_name:
           type: string
-          example: James
         phone:
           type: string
-          example: '(800) 555-1212'
       xml:
-        name: user
+        name: User
     ApiResponse:
       type: object
       properties:
@@ -687,36 +939,204 @@ components:
           type: string
         message:
           type: string
-      xml:
-        name: '##default'
   requestBodies:
-    Pet:
-      description: Pet object that needs to be added to the store
+    CartItemsPost:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Pet'
-        application/xml:
+            type: object
+            properties:
+              cart_id:
+                type: integer
+                format: int32
+              product_id:
+                type: integer
+                format: int32
+              quantity:
+                type: integer
+                format: int32
+    CartItemsPut:
+      content:
+        application/json:
           schema:
-            $ref: '#/components/schemas/Pet'
-    UserArray:
-      description: List of user object
+            type: object
+            properties:
+              product_id:
+                type: integer
+                format: int32
+              quantity:
+                type: integer
+                format: int32
+    Carts:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              id:
+                type: integer
+                format: int32
+              created:
+                type: string
+                format: date-time
+              modified:
+                type: string
+                format: date-time
+              used_id:
+                type: integer
+                format: int32
+    CartsPost:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              created:
+                type: string
+                format: date-time
+              used_id:
+                type: integer
+                format: int32
+    CartsPut:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              modified:
+                type: string
+                format: date-time
+              used_id:
+                type: integer
+                format: int32
+    OrdersPost:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              created:
+                type: string
+                format: date-time
+              total_price:
+                type: number
+                format: Decimal
+              used_id:
+                type: integer
+                format: int32
+    OrdersPut:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              modified:
+                type: string
+                format: date-time
+              status:
+                type: string
+              total_price:
+                type: number
+                format: Decimal
+              used_id:
+                type: integer
+                format: int32
+    ProductArray:
       content:
         application/json:
           schema:
             type: array
             items:
-              $ref: '#/components/schemas/User'
-  securitySchemes:
-    petstore_auth:
-      type: oauth2
-      flows:
-        implicit:
-          authorizationUrl: https://petstore3.swagger.io/oauth/authorize
-          scopes:
-            write:pets: modify pets in your account
-            read:pets: read your pets
-    api_key:
-      type: apiKey
-      name: api_key
-      in: header
+              "$ref": "#/components/schemas/Products"
+      description: List of product object
+      required: true
+    Products:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+              model_number:
+                type: string
+              description:
+                type: string
+              price:
+                type: number
+                format: Decimal
+    UsersArray:
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              "$ref": "#/components/schemas/Users"
+      description: List of user object
+      required: true
+    UsersPost:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+              password:
+                type: string
+              first_name:
+                type: string
+              last_name:
+                type: string
+              phone:
+                type: string
+      description: 'Note: password is sent in plaintext, and password_hash is in Response'
+      required: true
+    UsersPut:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+              password:
+                type: string
+              first_name:
+                type: string
+              last_name:
+                type: string
+              phone:
+                type: string
+      description: ''
+      required: true
+    AuthRegister:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+              password:
+                type: string
+              first_name:
+                type: string
+              last_name:
+                type: string
+              phone:
+                type: string
+      description: 'Note: password is sent in plaintext, and password_hash is in Response'
+      required: true
+    AuthLogin:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+              password:
+                type: string
+      description: 'Note: password is sent in plaintext'
+      required: true

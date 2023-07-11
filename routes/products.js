@@ -34,7 +34,7 @@ productsRouter.get('/', async (req, res) => {
     if (db.validResultsAtLeast1Row(results)) {
       res.status(200).json(results.rows);      
     } else {
-      res.status(200).json('No product rows');
+      res.status(404).json('No product rows');
     }    
   } catch (err) {
     throw Error(err);
@@ -146,7 +146,7 @@ productsRouter.put('/:id', async (req, res) => {
       } else {
         errMsg = 'value already used'
       }
-      res.status(404).json(errMsg);
+      res.status(400).json(errMsg);
     } else if (err.code === '23502') {
       res.status(400).json('required value missing');
     } else {

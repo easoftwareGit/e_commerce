@@ -79,8 +79,8 @@ async function createOrderItem(orderItem) {
       }
     } else if (err.code === '23503') {
       return {
-        status: 400,
-        message: 'product not valid'
+        status: 409,
+        message: err.message
       }
     } else {
       throw Error(err);

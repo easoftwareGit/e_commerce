@@ -289,13 +289,12 @@ function testOrderItems(app) {
 
     });
 
-    describe('GET /orders/:id/items/:itemId', function() {
-      const getOrderId = 1;
+    describe('GET /orders/items/:itemId', function() {      
       const getItemId = 2;
 
       it('returns a single order_item object', async function() {
         const response = await request(app)
-          .get(`/orders/${getOrderId}/items/${getItemId}`)
+          .get(`/orders/items/${getItemId}`)
           .expect(200);
         const item = response.body;
         expect(item).to.be.an.instanceOf(Object);
@@ -304,7 +303,7 @@ function testOrderItems(app) {
 
       it('returns a full order_item object', async function() {
         const response = await request(app)
-          .get(`/orders/${getOrderId}/items/${getItemId}`)
+          .get(`/orders/items/${getItemId}`)
           .expect(200);
         const item = response.body;
         expect(item).to.have.ownProperty('id');
@@ -316,7 +315,7 @@ function testOrderItems(app) {
 
       it('returned order_item has the correct id', async function() {
         const response = await request(app)
-          .get(`/orders/${getOrderId}/items/${getItemId}`)
+          .get(`/orders/items/${getItemId}`)
           .expect(200);
         const item = response.body;
         expect(item.id).to.be.an.equal(getItemId);
@@ -324,13 +323,13 @@ function testOrderItems(app) {
 
       it('called with a non-numeric order item ID returns a 404 error', function() {
         return request(app)
-          .get(`/orders/${getOrderId}/items/ABC`)
+          .get(`/orders/items/ABC`)
           .expect(404);
       });
 
       it('called with a invalid order item ID returns a 404 error', function() {
         return request(app)
-          .get(`/orders/${getOrderId}/items/1234567890`)
+          .get(`/orders/items/1234567890`)
           .expect(404);
       });
     });
@@ -339,14 +338,15 @@ function testOrderItems(app) {
       const orderId = 1;
       const nonExistantId = 1234;
       const postProductId = 2
+      const testQuantity = 5
       const newItem = {    
         product_id: postProductId,      
-        quantity: 3,
+        quantity: testQuantity,
         price_unit: 19.99
       };
       const invalidItem = {    
         product_id: nonExistantId,  
-        quantity: 5,
+        quantity: testQuantity,
         price_unit: 19.99
       };
 
@@ -378,14 +378,14 @@ function testOrderItems(app) {
         return await request(app)
           .post(`/orders/${nonExistantId}/items`)
           .send(invalidItem)
-          .expect(400);
+          .expect(409);
       });
 
       it('did NOT post order item with a non-existant product_id', async function() {
         return await request(app)
           .post(`/orders/${orderId}/items`)
           .send(invalidItem)
-          .expect(400);
+          .expect(409);
       });
 
       it('did NOT post order item with no product_id', async function() {
@@ -416,7 +416,7 @@ function testOrderItems(app) {
 
     });
 
-    describe('PUT /orders/:id/items/:itemId', function() {
+    describe('PUT /orders/items/:itemId', function() {
       const putOrderId = 1;
       const putItemId = 2;
       const resetSqlCommand = `
@@ -429,7 +429,7 @@ function testOrderItems(app) {
         price_unit: 49.99
       }
 
-      describe('Valid /orders/:id/items/:itemId', function() {
+      describe('Valid /orders/items/:itemId', function() {
 
         before('before 1st PUT test', async function() {
           await db.query(resetSqlCommand);
@@ -444,12 +444,12 @@ function testOrderItems(app) {
           let updatedItem;
 
           const response = await request(app)
-            .get(`/orders/${putOrderId}/items/${putItemId}`);
+            .get(`/orders/items/${putItemId}`);
           initialItem = response.body;
           updatedItem = Object.assign({}, testItem);
           updatedItem.order_id = putOrderId;
           const response_1 = await request(app)
-            .put(`/orders/${putOrderId}/items/${putItemId}`)
+            .put(`/orders/items/${putItemId}`)
             .send(updatedItem)
             .expect(200);
           const resturnedItem = response_1.body;
@@ -470,14 +470,14 @@ function testOrderItems(app) {
 
         it('called with a non-numeric order item ID returns a 404 error', function() {
           return request(app)
-            .put(`/orders/${putOrderId}/items/ABC`)
+            .put(`/orders/items/ABC`)
             .send(testItem)
             .expect(404)
         });
 
         it('called with an non existing order item ID returns a 404 error', function() {
           return request(app)
-            .put(`/orders/${putOrderId}/items/1234567890`)
+            .put(`/orders/items/1234567890`)
             .send(testItem)
             .expect(404)
         });
@@ -486,9 +486,9 @@ function testOrderItems(app) {
           const invalidItem = Object.assign({}, testItem);
           invalidItem.product_id = 1234;
           return await request(app)
-            .put(`/orders/${putOrderId}`)
+            .put(`/orders/items/${putItemId}`)
             .send(invalidItem)
-            .expect(400)
+            .expect(409)
         });
 
         // other tests for missing data performed in POST tests 
@@ -496,53 +496,62 @@ function testOrderItems(app) {
           const invalidItem = Object.assign({}, testItem);
           invalidItem.product_id = null;
           return await request(app)
-            .put(`/orders/${putOrderId}`)
+            .put(`/orders/items/${putItemId}`)
             .send(invalidItem)
             .expect(400)
         });
+
       });        
     });
 
-    describe('DELETE /orders/:id/items/:itemId', function() {
+    describe('DELETE /orders/items/:itemId', function() {
       const testOrderId = 1;
       const delProductId = 2;
+      const testQuantity = 5;
       const toDelItem = {
         product_id: delProductId,
-        quantity: 3,
+        quantity: testQuantity,
         price_unit: 19.99
       };
       let delItemId;
 
-      before('before DELETE /orders/:id/items/:itemId tests', async function() {
-        const response = await request(app)
-          .post(`/orders/${testOrderId}/items`)
-          .send(toDelItem);
-        const postedItem = response.body;
+      before('before DELETE /orders/items/:itemId tests', async function() {
+        const sqlCommand = `
+          INSERT INTO order_items (order_id, product_id, quantity, price_unit) 
+          VALUES ($1, $2, $3, $4) RETURNING *`;
+        const rowValues = [testOrderId, toDelItem.product_id, toDelItem.quantity, toDelItem.price_unit ]
+        const response = await db.query(sqlCommand, rowValues);
+        const postedItem = response.rows[0];
         delItemId = postedItem.id;
       });
 
-      describe('Valid DELETE /orders/:id/items/:itemId', function() {
+      after('after DELETE /orders/items/:itemId tests', async function() {
+        const sqlCommand = `DELETE FROM order_items WHERE id = ${delItemId}`;
+        return await db.query(sqlCommand);
+      });
+
+      describe('Valid DELETE /orders/items/:itemId', function() {
 
         it('deletes an order item', async function() {
           const response = await request(app)
-            .delete(`/orders/${testOrderId}/items/${delItemId}`)
+            .delete(`/orders/items/${delItemId}`)
             .expect(200)
           const itemId = parseInt(response.text);
           expect(itemId).to.equal(delItemId);
         });
       });
 
-      describe('Invalid DELETE /orders/:id/items/:itemId', function() {
+      describe('Invalid DELETE /orders/items/:itemId', function() {
 
         it('called with a non-numeric order ID returns a 404 error', function() {
           return request(app)
-            .delete(`/orders/${testOrderId}/items/ABC`)          
+            .delete(`/orders/items/ABC`)          
             .expect(404)
         });
 
         it('called with an non existing order ID returns a 404 error', function() {
           return request(app)
-            .delete(`/orders/${testOrderId}/items/1234567890`)          
+            .delete(`/orders/items/1234567890`)          
             .expect(404)
         });        
       });    

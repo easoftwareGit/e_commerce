@@ -23,6 +23,25 @@ ordersRouter.param('id', (req, res, next, id) => {
   }
 });
 
+ordersRouter.get('/', async (req, res) => {
+
+  // GET request - get all orders
+  // path: localhost:3000/orders
+  // body: not used
+
+  const sqlCommand = `SELECT * FROM orders`;
+  try {
+    const results = await db.query(sqlCommand); 
+    if (db.validResultsAtLeast1Row(results) || results.rows.length === 0) {      
+      res.status(200).json(results.rows);
+    } else {        
+      res.status(400).json('error getting orders');
+    }    
+  } catch (err) {
+    throw Error(err);
+  }
+});
+
 ordersRouter.get('/:id', async (req, res) => {
 
   // GET request - get one order by id#
@@ -68,7 +87,13 @@ ordersRouter.post('/', async (req, res) => {
       res.status(results.status).json(results.message);
     }
   } catch (err) {
-    throw Error(err)
+    if (err.message && err.message.includes('violates foreign key constraint')) {
+      res.status(409).json(err.message);
+    } else if (err.message && err.message.includes('invalid input syntax')) {
+      res.status(400).json(err.message);
+    } else {
+      throw Error(err)
+    }
   }
 });
 
@@ -80,7 +105,6 @@ ordersRouter.put('/:id', async (req, res) => {
   // body: JSON object
   //  {  
   //    modified: new Date("01/28/2023"), 
-  //    user_id: 1
   //    status: 'Created',
   //    total_price: 123.45,
   //    user_id: 1
@@ -108,6 +132,8 @@ ordersRouter.put('/:id', async (req, res) => {
   } catch (err) {
     if (err.code === '23502') {
       res.status(400).json('required value missing');
+    } else if (err.code === '23503') {
+      res.status(409).json(err.message);
     } else {
       throw Error(err);
     }    
@@ -184,7 +210,7 @@ ordersRouter.get('/:id/items', async (req, res) => {
   }
 });
 
-ordersRouter.get('/:id/items/:itemId', async (req, res) => {
+ordersRouter.get('/items/:itemId', async (req, res) => {
 
   // GET request
   // path: localhost:3000/orders/id#/items/itemId#
@@ -231,7 +257,7 @@ ordersRouter.post('/:id/items', async (req, res) => {
   }  
 });
 
-ordersRouter.put('/:id/items/:itemId', async (req, res) => {
+ordersRouter.put('/items/:itemId', async (req, res) => {
 
   // PUT request
   // path: localhost:3000/orders/id#/items/itemId#
@@ -264,14 +290,14 @@ ordersRouter.put('/:id/items/:itemId', async (req, res) => {
     if (err.code === '23502') {
       res.status(400).json('required value missing');
     } else if (err.code === '23503') {
-      res.status(400).json('product not valid');
+      res.status(409).json(err.message);
     } else {
       throw Error(err);
     }    
   }
 });
 
-ordersRouter.delete('/:id/items/:itemId', async (req, res) => {
+ordersRouter.delete('/items/:itemId', async (req, res) => {
 
   // DELETE request
   // path: localhost:3000/orders/#
