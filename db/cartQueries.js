@@ -85,7 +85,9 @@ async function getCartTotalPrice(cartId) {
  * deletes one cart row
  *
  * @param {Integer} cartId - id of cart to delete
- * @return {Object|null} Object - delete results info; null = error deleteing
+ * @return {Object} Object = 
+ *    success: { status: 201, rowCount: 1 }
+ *    err: { status: error_code, rowCount: 0 }
  */
 async function deleteCart(cartId) {
   const sqlCommand = `
@@ -111,8 +113,7 @@ async function deleteCart(cartId) {
       return {
         status: 409,
         rowCount: 0
-      }
-      // res.status(409).send('Cannot delete - constraint error');
+      }      
     } else {
       throw Error(err);
     }

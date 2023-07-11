@@ -177,7 +177,9 @@ async function insertOrdersItemsFromCartItems(orderId, cartId) {
  *  5) removes cart
  *
  * @param {Object} cart
- * @return {*} 
+  * @return {Object} Object = 
+ *    success: { status: 201, order: order data} 
+ *    err: { status:404, message: error message }
  */
 async function moveCartToOrder(cart) {
 
