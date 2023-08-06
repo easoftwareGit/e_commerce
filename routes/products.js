@@ -64,8 +64,7 @@ productsRouter.get('/:id', async (req, res) => {
 productsRouter.post('/', async (req, res) => {
 
   // POST request
-  // path: localhost:3000/products/#
-  //  where # is the id number for the product
+  // path: localhost:3000/products/
   // body: JSON object
   //  {
   //    "name": "product",
