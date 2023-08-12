@@ -366,7 +366,7 @@ function testCartItems(app) {
           const invalidItem = Object.assign({}, testItem);
           invalidItem.product_id = nonExistantId;
           return await request(app)
-            .put(`/carts/items/${putCartId}`)
+            .put(`/carts/items/${putItemId}`)
             .send(invalidItem)
             .expect(409)
         });
@@ -376,7 +376,7 @@ function testCartItems(app) {
           const invalidItem = Object.assign({}, testItem);
           invalidItem.product_id = null;
           return await request(app)
-            .put(`/carts/items/${putCartId}`)
+            .put(`/carts/items/${putItemId}`)
             .send(invalidItem)
             .expect(400)
         });

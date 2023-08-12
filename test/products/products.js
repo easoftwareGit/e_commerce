@@ -218,7 +218,7 @@ function testProducts(app) {
           .expect(400);
       });
 
-      it('did NOT post product with no description', async function() {
+      it('did NOT post product with no price', async function() {
         invalidProduct.description = 'Only when no kids are around';
         invalidProduct.price = null;
         return await request(app)
