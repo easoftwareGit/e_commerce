@@ -37,7 +37,7 @@ async function findUserByEmail(email) {
  * @return {Object|null} Object = User's data; mull = user not found
  */
 async function findUserById(id) {
-  const sqlCommand = `SELECT * FROM users WHERE email = $1`;
+  const sqlCommand = `SELECT * FROM users WHERE id = $1`;
   try {
     const results = await db.query(sqlCommand, [id]);
     if (db.validResultsAtLeast1Row(results)) {

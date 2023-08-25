@@ -34,21 +34,77 @@ authRouter.post('/register', async (req, res) => {
   }
 });
 
-authRouter.post('/login', 
-  passport.authenticate('local'), 
-  (req, res) => {
+// authRouter.post('/login', 
+//   passport.authenticate('local'), 
+//   (req, res) => {
 
-  // POST request - login user
-  // path: localhost:3000/auth/login
-  // body: 
-  //  {
-  //    "email": "user@email.com",
-  //    "password": "123ABC",
-  //  }
+//   // POST request - login user
+//   // path: localhost:3000/auth/login
+//   // body: 
+//   //  {
+//   //    "email": "user@email.com",
+//   //    "password": "123ABC",
+//   //  }
+//   // this path uses passport LocalStrategy (see main index.js)
+
+//     res.status(200).json(req.user.id);
+//   }
+// );
+
+authRouter.post('/login', passport.authenticate('local', {
+  successRedirect: `/auth/profile`,
+  failureRedirect: '/auth/login',
+  failureFlash: false
+}));
+
+authRouter.get('/logout', (req, res, next) => {
+
+  // GET request - log out user
+  // path: localhost:5000/auth/logout
+  // body: not used
   // this path uses passport LocalStrategy (see main index.js)
 
-    res.status(200).json(req.user.id);
+  req.logout(err => {
+    if (err) {
+      return next(err);
+    }
+    res.redirect(`/auth/login`);
+  })
+})
+
+// authRouter.get('/profile', loggedIn, (req, res, next) => {
+
+//   // GET request - go to profile page (test if user is logged in)
+//   // path: localhost:5000/auth/profile
+//   // body: not used
+//   // this path uses passport LocalStrategy (see main index.js)
+//   //   and the loggedIn middleware function
+
+//   res.status(200).send(req.user);  
+// });
+
+authRouter.get('/profile', (req, res) => {
+  if (req.isAuthenticated()) {
+    res.send('Welcome to your profile');
+  } else {
+    res.redirect('/auth/login');
   }
-);
+});
+
+function loggedIn(req, res, next) {
+  if (req.isAuthenticated()) {
+    next();
+  } else {        
+    res.status(401).send('not logged in');
+  }
+};
+
+authRouter.get('/is_logged_in', loggedIn, (req, res) => {
+  res.status(200).send("User logged in")
+});
+
+authRouter.get('/login', (req, res) => {
+  res.send('Login Page');
+});
 
 module.exports = authRouter;

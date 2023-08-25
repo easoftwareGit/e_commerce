@@ -70,7 +70,6 @@ ordersRouter.post('/', async (req, res) => {
   //  {
   //    created: new Date("01/28/2023"),
   //    modified: new Date("01/28/2023"), (not required, will be set = created)
-  //    user_id: 1
   //    status: 'Created',                (not required will be set = 'Created')
   //    total_price: 123.45,
   //    user_id: 1

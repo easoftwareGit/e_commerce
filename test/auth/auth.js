@@ -2,6 +2,7 @@ const request = require('supertest');
 const db = require('../../db/db');
 
 const { assert } = require('chai');
+const { response } = require('../..');
 
 function testAuth(app) {
 
@@ -42,7 +43,7 @@ function testAuth(app) {
         const sqlCommand = `DELETE FROM users WHERE email = '${newUser.email}'`;
         await db.query(sqlCommand);
       });
-  
+
       it('registers a new user with valid data', async function() {
         return await request(app)
           .post('/auth/register')
@@ -73,18 +74,36 @@ function testAuth(app) {
   
     describe('login a user', function() {
   
-      it('log in user with matching email and password', async function() {
+      it('log in user with valid email and password', async function() {
         return await request(app)
           .post('/auth/login')
           .send(logInUser)
-          .expect(200)
+          .expect(302)
           .then((response) => {
-            const logInId = response.body;
-            assert.equal(logInId, newUser.id);
+            const redirect = response.text;
+            assert.equal(redirect, "Found. Redirecting to /auth/profile");
           });
       });
-  
-      it('cannot login with email not in database', async function() {
+
+    });
+
+    describe('logout a user', function () {
+
+      it('log out user', function () {
+        return request(app)
+          .get('/auth/logout')
+          .expect(302)
+          .then((response) => {
+            const redirect = response.text;
+            assert.equal(redirect, "Found. Redirecting to /auth/login");
+          });
+      });
+
+    });
+
+    describe('invalid login attempts', function () {
+
+      it('cannot login with email not in database', async function () {
         return await request(app)
           .post('/auth/login')
           .send(invalidUser)
@@ -99,8 +118,8 @@ function testAuth(app) {
           .send(invalidUser)
           .expect({});
       });
-  
-    });
+
+    })
   
   });
   

@@ -2,7 +2,6 @@ const expect = require('chai').expect;
 const request = require('supertest');
 const db = require('../../db/db');
 const orderQueries = require('../../db/orderQueries');
-const cartQueries = require('../../db/cartQueries');
 
 const dbTools = require('../../db/dbTools');
 const { assert } = require('chai');
@@ -281,7 +280,7 @@ function testOrderItems(app) {
           .expect(404);
       });
 
-      it('called with a invalid order ID returns a 404 error', function() {
+      it('called with a non existing order ID returns a 404 error', function() {
         return request(app)
           .get('/orders/1234567890/items')
           .expect(404);
